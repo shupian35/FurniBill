@@ -1,0 +1,119 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/build-android.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: '构建类型'
+        required: true
+        type: choice
+        options:
+          - debug
+          - release
+      codesign:
+        description: '代码签名（release 构建需要证书）'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  APP_NAME: furni_bill
+
+jobs:
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Run tests
+        run: flutter test
+
+      # ========== Debug Build (no signing) ==========
+      - name: Build iOS (Debug - no signing)
+        if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == ''
+        run: |
+          flutter build ios --debug --no-codesign
+          mkdir -p build/ios/debug
+          # Create a dummy IPA structure for artifact upload
+          cp -r build/ios/iphoneos/Runner.app build/ios/debug/
+
+      - name: Upload iOS Debug Build
+        if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-debug
+          path: build/ios/debug/
+          retention-days: 7
+
+      # ========== Release Build ==========
+      - name: Setup Apple Code Signing (Release)
+        if: (github.event.inputs.build_type == 'release' || github.event_name == 'push') && github.event.inputs.codesign == 'true'
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.IOS_P12_BASE64 }}
+          p12-password: ${{ secrets.IOS_P12_PASSWORD }}
+
+      - name: Setup Provisioning Profile (Release)
+        if: (github.event.inputs.build_type == 'release' || github.event_name == 'push') && github.event.inputs.codesign == 'true'
+        env:
+          PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROVISION_PROFILE_BASE64" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/build.mobileprovision
+
+      - name: Build iOS (Release - unsigned)
+        if: (github.event.inputs.build_type == 'release' || github.event_name == 'push' || github.event_name == 'pull_request') && github.event.inputs.codesign != 'true'
+        run: |
+          flutter build ios --release --no-codesign
+          mkdir -p build/ios/release
+          cp -r build/ios/iphoneos/Runner.app build/ios/release/
+
+      - name: Build iOS (Release - signed)
+        if: (github.event.inputs.build_type == 'release' || github.event_name == 'push') && github.event.inputs.codesign == 'true'
+        run: |
+          flutter build ios --release
+          mkdir -p build/ios/release
+
+      - name: Export IPA (Release - unsigned)
+        if: (github.event.inputs.build_type == 'release' || github.event_name == 'push' || github.event_name == 'pull_request') && github.event.inputs.codesign != 'true'
+        run: |
+          mkdir -p build/ios/ipa
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../ipa/furni_bill.ipa Payload
+          cd ../../..
+
+      - name: Upload iOS Release Build
+        if: github.event.inputs.build_type == 'release' || github.event_name == 'push' || github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release
+          path: |
+            build/ios/release/
+            build/ios/ipa/
+          retention-days: 30
