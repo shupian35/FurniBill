@@ -1,0 +1,54 @@
+name: furni_bill
+description: "家具批发 · 简易开单 App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # 状态管理
+  provider: ^6.1.2
+
+  # 数据库
+  sqflite: ^2.4.1
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  # PDF 生成与打印
+  pdf: ^3.11.1
+  printing: ^5.14.2
+
+  # WebDAV 同步
+  webdav_client: ^1.2.1
+
+  # 工具
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  image_picker: ^1.1.2
+  share_plus: ^10.1.4
+  excel: ^4.0.6
+  fl_chart: ^0.70.2
+  flutter_slidable: ^3.1.1
+  shared_preferences: ^2.3.4
+  crypto: ^3.0.6
+  archive: ^3.6.1
+  permission_handler: ^11.3.1
+  connectivity_plus: ^6.1.0
+  barcode_scan2: ^4.3.3
+  package_info_plus: ^8.1.2
+  open_file: ^3.5.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
