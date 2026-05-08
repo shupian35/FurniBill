@@ -70,46 +70,59 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
     final result = await showModalBottomSheet<Customer>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        builder: (_, scrollCtrl) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  const Text('选择客户', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () async {
-                      final c = await Navigator.push<Customer>(
-                        context,
-                        MaterialPageRoute(builder: (_) => const CustomerEditPage()),
-                      );
-                      if (c != null && mounted) Navigator.pop(ctx, c);
-                    },
-                    child: const Text('+ 新增'),
-                  ),
-                ],
+      useSafeArea: true,
+      builder: (ctx) => SafeArea(
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, scrollCtrl) => Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    const Text('选择客户', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.pop(ctx); // 先关闭
+                        final c = await Navigator.push<Customer>(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CustomerEditPage()),
+                        );
+                        if (c != null && mounted) {
+                          setState(() {
+                            _selectedCustomer = c;
+                            _orderDiscount = c.discount;
+                          });
+                        }
+                      },
+                      child: const Text('+ 新增'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollCtrl,
-                itemCount: provider.customers.length,
-                itemBuilder: (_, i) {
-                  final c = provider.customers[i];
-                  return ListTile(
-                    leading: CircleAvatar(child: Text(c.name[0])),
-                    title: Text(c.name),
-                    subtitle: Text('${c.phone}  ${c.grade}'),
-                    trailing: c.owing > 0 ? Text('欠¥${c.owing.toStringAsFixed(0)}', style: const TextStyle(color: Colors.red)) : null,
-                    onTap: () => Navigator.pop(ctx, c),
-                  );
-                },
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollCtrl,
+                  itemCount: provider.customers.length,
+                  itemBuilder: (_, i) {
+                    final c = provider.customers[i];
+                    return ListTile(
+                      leading: CircleAvatar(child: Text(c.name[0])),
+                      title: Text(c.name),
+                      subtitle: Text('${c.phone}  ${c.grade}'),
+                      trailing: c.owing > 0 ? Text('欠¥${c.owing.toStringAsFixed(0)}', style: const TextStyle(color: Colors.red)) : null,
+                      onTap: () => Navigator.pop(ctx, c),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -126,35 +139,49 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
     final result = await showModalBottomSheet<Product>(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        builder: (_, scrollCtrl) => Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(children: [
-                const Text('添加商品', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const Spacer(),
-                TextButton(onPressed: () { _addCustomItem(); Navigator.pop(ctx); }, child: const Text('+ 临时商品')),
-              ]),
-            ),
-            Expanded(
-              child: ListView.builder(
-                controller: scrollCtrl,
-                itemCount: provider.products.length,
-                itemBuilder: (_, i) {
-                  final p = provider.products[i];
-                  return ListTile(
-                    leading: Icon(Icons.chair, color: Theme.of(context).colorScheme.primary),
-                    title: Text(p.name),
-                    subtitle: AmountText(amount: p.wholesalePrice),
-                    trailing: const Icon(Icons.add_circle_outline),
-                    onTap: () => Navigator.pop(ctx, p),
-                  );
-                },
+      useSafeArea: true,
+      builder: (ctx) => SafeArea(
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, scrollCtrl) => Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(children: [
+                  const Text('添加商品', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      // 等 BottomSheet 关闭动画完成后再弹窗
+                      Future.delayed(const Duration(milliseconds: 300), _addCustomItem);
+                    },
+                    child: const Text('+ 临时商品'),
+                  ),
+                ]),
               ),
-            ),
-          ],
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollCtrl,
+                  itemCount: provider.products.length,
+                  itemBuilder: (_, i) {
+                    final p = provider.products[i];
+                    return ListTile(
+                      leading: Icon(Icons.chair, color: Theme.of(context).colorScheme.primary),
+                      title: Text(p.name),
+                      subtitle: AmountText(amount: p.wholesalePrice),
+                      trailing: const Icon(Icons.add_circle_outline),
+                      onTap: () => Navigator.pop(ctx, p),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
