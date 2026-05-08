@@ -12,16 +12,18 @@ class ProductListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ProductProvider>(
       builder: (context, provider, _) {
-        return Column(
-          children: [
-            AppSearchBar(
-              hintText: '搜索商品名称/货号',
-              onChanged: provider.setSearch,
-              onClear: () => provider.setSearch(''),
-            ),
-            _buildCategoryChips(context, provider),
-            Expanded(child: _buildList(context, provider)),
-          ],
+        return SafeArea(
+          child: Column(
+            children: [
+              AppSearchBar(
+                hintText: '搜索商品名称/货号',
+                onChanged: provider.setSearch,
+                onClear: () => provider.setSearch(''),
+              ),
+              _buildCategoryChips(context, provider),
+              Expanded(child: _buildList(context, provider)),
+            ],
+          ),
         );
       },
     );

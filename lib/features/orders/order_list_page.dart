@@ -14,11 +14,13 @@ class OrderListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<OrderProvider>(
       builder: (context, provider, _) {
-        return Column(
-          children: [
-            _buildFilterChips(context, provider),
-            Expanded(child: _buildList(context, provider)),
-          ],
+        return SafeArea(
+          child: Column(
+            children: [
+              _buildFilterChips(context, provider),
+              Expanded(child: _buildList(context, provider)),
+            ],
+          ),
         );
       },
     );

@@ -12,40 +12,42 @@ class CustomerListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CustomerProvider>(
       builder: (context, provider, _) {
-        return Column(
-          children: [
-            AppSearchBar(
-              hintText: '搜索客户名称/电话/区域',
-              onChanged: provider.setSearch,
-              onClear: () => provider.setSearch(''),
-            ),
-            if (provider.regions.isNotEmpty)
-              SizedBox(
-                height: 44,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: provider.regions.length + 1,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return FilterChip(
-                        label: const Text('全部区域'),
-                        selected: provider.regionFilter.isEmpty,
-                        onSelected: (_) => provider.setRegionFilter(''),
-                      );
-                    }
-                    final r = provider.regions[index - 1];
-                    return FilterChip(
-                      label: Text(r),
-                      selected: provider.regionFilter == r,
-                      onSelected: (_) => provider.setRegionFilter(r),
-                    );
-                  },
-                ),
+        return SafeArea(
+          child: Column(
+            children: [
+              AppSearchBar(
+                hintText: '搜索客户名称/电话/区域',
+                onChanged: provider.setSearch,
+                onClear: () => provider.setSearch(''),
               ),
-            Expanded(child: _buildList(context, provider)),
-          ],
+              if (provider.regions.isNotEmpty)
+                SizedBox(
+                  height: 44,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: provider.regions.length + 1,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return FilterChip(
+                          label: const Text('全部区域'),
+                          selected: provider.regionFilter.isEmpty,
+                          onSelected: (_) => provider.setRegionFilter(''),
+                        );
+                      }
+                      final r = provider.regions[index - 1];
+                      return FilterChip(
+                        label: Text(r),
+                        selected: provider.regionFilter == r,
+                        onSelected: (_) => provider.setRegionFilter(r),
+                      );
+                    },
+                  ),
+                ),
+              Expanded(child: _buildList(context, provider)),
+            ],
+          ),
         );
       },
     );
