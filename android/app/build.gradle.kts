@@ -1,5 +1,14 @@
 import java.util.Properties
 
+// 排除旧版 Android Support Library，防止与 AndroidX 冲突
+configurations.all {
+    exclude(group = "com.android.support", module = "support-compat")
+    exclude(group = "com.android.support", module = "support-core-ui")
+    exclude(group = "com.android.support", module = "support-core-utils")
+    exclude(group = "com.android.support", module = "support-fragment")
+    exclude(group = "com.android.support", module = "support-annotations")
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
