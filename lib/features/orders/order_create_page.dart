@@ -93,10 +93,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                           MaterialPageRoute(builder: (_) => const CustomerEditPage()),
                         );
                         if (c != null && mounted) {
-                          setState(() {
-                            _selectedCustomer = c;
-                            _orderDiscount = c.discount;
-                          });
+                          setState(() => _selectedCustomer = c);
                         }
                       },
                       child: const Text('+ 新增'),
@@ -114,8 +111,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                     return ListTile(
                       leading: CircleAvatar(child: Text(c.name[0])),
                       title: Text(c.name),
-                      subtitle: Text('${c.phone}  ${c.grade}'),
-                      trailing: c.owing > 0 ? Text('欠¥${c.owing.toStringAsFixed(0)}', style: const TextStyle(color: Colors.red)) : null,
+                      subtitle: Text(c.phone),
                       onTap: () => Navigator.pop(ctx, c),
                     );
                   },
@@ -127,10 +123,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       ),
     );
     if (result != null) {
-      setState(() {
-        _selectedCustomer = result;
-        _orderDiscount = result.discount;
-      });
+      setState(() => _selectedCustomer = result);
     }
   }
 
@@ -288,7 +281,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
     setState(() => _saving = true);
     try {
       final orderProvider = context.read<OrderProvider>();
-      final customerProvider = context.read<CustomerProvider>();
       final productProvider = context.read<ProductProvider>();
 
       final orderNo = isDraftEdit ? widget.draft!.orderNo : orderProvider.generateOrderNo();
@@ -328,10 +320,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
         await orderProvider.updateOrder(order);
       } else {
         await orderProvider.saveOrder(order);
-      }
-
-      if (_owing > 0) {
-        await customerProvider.updateOwing(_selectedCustomer!.id!, _owing);
       }
 
       // 扣库存
@@ -438,7 +426,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
             leading: const Icon(Icons.person),
             title: Text(_selectedCustomer?.name ?? '选择客户'),
             subtitle: _selectedCustomer != null
-                ? Text('${_selectedCustomer!.phone}  ${_selectedCustomer!.grade}  折扣: ${(_selectedCustomer!.discount * 100).toStringAsFixed(0)}%')
+                ? Text('${_selectedCustomer!.phone}')
                 : null,
             trailing: const Icon(Icons.chevron_right),
             onTap: _selectCustomer,

@@ -18,35 +18,10 @@ class CustomerListPage extends StatelessWidget {
             child: Column(
               children: [
                 AppSearchBar(
-                  hintText: '搜索客户名称/电话/区域',
+                  hintText: '搜索客户名称/电话/地址',
                   onChanged: provider.setSearch,
                   onClear: () => provider.setSearch(''),
                 ),
-                if (provider.regions.isNotEmpty)
-                  SizedBox(
-                    height: 44,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: provider.regions.length + 1,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return FilterChip(
-                            label: const Text('全部区域'),
-                            selected: provider.regionFilter.isEmpty,
-                            onSelected: (_) => provider.setRegionFilter(''),
-                          );
-                        }
-                        final r = provider.regions[index - 1];
-                        return FilterChip(
-                          label: Text(r),
-                          selected: provider.regionFilter == r,
-                          onSelected: (_) => provider.setRegionFilter(r),
-                        );
-                      },
-                    ),
-                  ),
                 Expanded(child: _buildList(context, provider)),
               ],
             ),
@@ -123,7 +98,6 @@ class _CustomerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasOwing = customer.owing > 0;
     return Slidable(
       key: ValueKey(customer.id),
       endActionPane: ActionPane(
@@ -152,28 +126,18 @@ class _CustomerCard extends StatelessWidget {
               ),
             ),
           ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-              ),
-              StatusChip(status: customer.grade),
-            ],
-          ),
+          title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.w600)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(customer.phone),
-              if (customer.region != null && customer.region!.isNotEmpty)
+              if (customer.address != null && customer.address!.isNotEmpty)
                 Text(
-                  customer.region!,
+                  customer.address!,
                   style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12),
-                ),
-              if (hasOwing)
-                Text(
-                  '欠款 ¥${customer.owing.toStringAsFixed(2)}',
-                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
             ],
           ),

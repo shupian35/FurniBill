@@ -19,7 +19,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -75,15 +75,8 @@ class DatabaseHelper {
       CREATE TABLE customers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        company_name TEXT,
         phone TEXT NOT NULL,
-        region TEXT,
         address TEXT,
-        grade TEXT DEFAULT '普通',
-        discount REAL DEFAULT 1.0,
-        credit_limit REAL,
-        owing REAL DEFAULT 0,
-        remark TEXT,
         create_time TEXT NOT NULL,
         update_time TEXT NOT NULL
       )
@@ -180,6 +173,25 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await db.execute("ALTER TABLE products ADD COLUMN spec TEXT");
       await db.execute("ALTER TABLE products ADD COLUMN unit TEXT DEFAULT '件'");
+    }
+    if (oldVersion < 3) {
+      // Recreate customers table with simplified schema
+      await db.execute('''
+        CREATE TABLE customers_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          address TEXT,
+          create_time TEXT NOT NULL,
+          update_time TEXT NOT NULL
+        )
+      ''');
+      await db.execute(
+        'INSERT INTO customers_new (id, name, phone, address, create_time, update_time) '
+        'SELECT id, name, phone, address, create_time, update_time FROM customers'
+      );
+      await db.execute('DROP TABLE customers');
+      await db.execute('ALTER TABLE customers_new RENAME TO customers');
     }
   }
 

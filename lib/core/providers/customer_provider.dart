@@ -7,34 +7,18 @@ class CustomerProvider extends ChangeNotifier {
   List<Customer> _customers = [];
   bool _loading = false;
   String _searchQuery = '';
-  String _regionFilter = '';
 
   List<Customer> get customers => _customers;
   bool get loading => _loading;
-  String get regionFilter => _regionFilter;
 
   List<Customer> get filteredCustomers {
-    var result = _customers;
-    if (_regionFilter.isNotEmpty) {
-      result = result.where((c) => c.region == _regionFilter).toList();
-    }
-    if (_searchQuery.isNotEmpty) {
-      final q = _searchQuery.toLowerCase();
-      result = result.where((c) {
-        return c.name.toLowerCase().contains(q) ||
-            c.phone.contains(q) ||
-            (c.region?.toLowerCase().contains(q) ?? false);
-      }).toList();
-    }
-    return result;
-  }
-
-  List<String> get regions {
-    final set = _customers
-        .map((c) => c.region)
-        .where((r) => r != null && r.isNotEmpty)
-        .toSet();
-    return set.cast<String>().toList()..sort();
+    if (_searchQuery.isEmpty) return _customers;
+    final q = _searchQuery.toLowerCase();
+    return _customers.where((c) {
+      return c.name.toLowerCase().contains(q) ||
+          c.phone.contains(q) ||
+          (c.address?.toLowerCase().contains(q) ?? false);
+    }).toList();
   }
 
   Future<void> init() async {
@@ -52,11 +36,6 @@ class CustomerProvider extends ChangeNotifier {
 
   void setSearch(String query) {
     _searchQuery = query;
-    notifyListeners();
-  }
-
-  void setRegionFilter(String region) {
-    _regionFilter = region == _regionFilter ? '' : region;
     notifyListeners();
   }
 
@@ -80,19 +59,6 @@ class CustomerProvider extends ChangeNotifier {
 
   Future<void> deleteCustomer(int id) async {
     await _db.delete('customers', where: 'id = ?', whereArgs: [id]);
-    await _loadCustomers();
-    notifyListeners();
-  }
-
-  Future<void> updateOwing(int customerId, double amount) async {
-    final customer = _customers.firstWhere((c) => c.id == customerId);
-    final newOwing = customer.owing + amount;
-    await _db.update(
-      'customers',
-      {'owing': newOwing},
-      where: 'id = ?',
-      whereArgs: [customerId],
-    );
     await _loadCustomers();
     notifyListeners();
   }

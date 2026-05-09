@@ -14,19 +14,10 @@ void main() {
 
     test('payment methods', () {
       expect(AppConstants.paymentMethods, ['现金', '微信', '支付宝', '转账', '挂账']);
+    });
+
+    test('payment methods count', () {
       expect(AppConstants.paymentMethods.length, 5);
-    });
-
-    test('customer grades', () {
-      expect(AppConstants.customerGrades, ['普通', 'VIP', '代理', '批发商']);
-      expect(AppConstants.customerGrades.length, 4);
-    });
-
-    test('gradeDiscounts mapping', () {
-      expect(AppConstants.gradeDiscounts['普通'], 1.0);
-      expect(AppConstants.gradeDiscounts['VIP'], 0.95);
-      expect(AppConstants.gradeDiscounts['代理'], 0.90);
-      expect(AppConstants.gradeDiscounts['批发商'], 0.88);
     });
 
     test('order statuses', () {

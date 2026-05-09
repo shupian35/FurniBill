@@ -11,22 +11,6 @@ class AppConstants {
     '挂账',
   ];
 
-  // 客户等级
-  static const List<String> customerGrades = [
-    '普通',
-    'VIP',
-    '代理',
-    '批发商',
-  ];
-
-  // 默认折扣映射
-  static const Map<String, double> gradeDiscounts = {
-    '普通': 1.0,
-    'VIP': 0.95,
-    '代理': 0.90,
-    '批发商': 0.88,
-  };
-
   // 订单状态
   static const Map<String, String> orderStatusMap = {
     'draft': '草稿',

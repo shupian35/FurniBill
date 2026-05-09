@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/payment.dart';
 import '../../core/providers/order_provider.dart';
-import '../../core/providers/customer_provider.dart';
 import '../../core/providers/product_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../widgets/common/widgets.dart';
@@ -69,7 +68,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       final amount = double.tryParse(result['amount']!) ?? 0;
       if (amount <= 0) return;
       final orderProvider = context.read<OrderProvider>();
-      final customerProvider = context.read<CustomerProvider>();
       await orderProvider.addPayment(Payment(
         orderId: _order!.id!,
         customerId: _order!.customerId,
@@ -94,7 +92,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         status: _order!.status,
         isDraft: false,
       ));
-      await customerProvider.updateOwing(_order!.customerId, -amount);
       await _loadOrder();
     }
   }
