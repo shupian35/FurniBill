@@ -4,6 +4,7 @@ class OrderItem {
   int? skuId;
   String name;
   String? specSummary;
+  String? unit;
   double quantity;
   double price;
   double discount;
@@ -15,6 +16,7 @@ class OrderItem {
     this.skuId,
     required this.name,
     this.specSummary,
+    this.unit,
     required this.quantity,
     required this.price,
     this.discount = 1.0,
@@ -27,6 +29,7 @@ class OrderItem {
         'sku_id': skuId,
         'name': name,
         'spec_summary': specSummary,
+        'unit': unit,
         'quantity': quantity,
         'price': price,
         'discount': discount,
@@ -40,6 +43,7 @@ class OrderItem {
       skuId: json['sku_id'] as int?,
       name: json['name'] as String,
       specSummary: json['spec_summary'] as String?,
+      unit: json['unit'] as String?,
       quantity: (json['quantity'] as num).toDouble(),
       price: (json['price'] as num).toDouble(),
       discount: (json['discount'] as num?)?.toDouble() ?? 1.0,

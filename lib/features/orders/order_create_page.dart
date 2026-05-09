@@ -289,6 +289,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
         skuId: i.skuId,
         name: i.name,
         specSummary: i.specSummary,
+        unit: i.unit,
         quantity: i.quantity,
         price: i.price,
         discount: i.discount,
@@ -357,6 +358,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       final items = _items.map((i) => OrderItem(
         productId: i.productId, skuId: i.skuId,
         name: i.name, specSummary: i.specSummary,
+        unit: i.unit,
         quantity: i.quantity, price: i.price,
         discount: i.discount, remark: i.remark,
       )).toList();
