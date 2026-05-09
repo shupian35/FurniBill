@@ -8,6 +8,9 @@ on:
       - 'LICENSE'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   APP_NAME: furni_bill
 
