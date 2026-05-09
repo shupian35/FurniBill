@@ -43,6 +43,8 @@ class Product {
   final int? id;
   final String name;
   final String code;
+  final String? spec;
+  final String? unit;
   final int categoryId;
   final String? imagePath;
   final double wholesalePrice;
@@ -60,6 +62,8 @@ class Product {
     this.id,
     required this.name,
     required this.code,
+    this.spec,
+    this.unit,
     this.categoryId = 0,
     this.imagePath,
     required this.wholesalePrice,
@@ -79,6 +83,8 @@ class Product {
         if (id != null) 'id': id,
         'name': name,
         'code': code,
+        'spec': spec,
+        'unit': unit,
         'category_id': categoryId,
         'image_path': imagePath,
         'wholesale_price': wholesalePrice,
@@ -108,6 +114,8 @@ class Product {
       id: map['id'] as int?,
       name: map['name'] as String,
       code: map['code'] as String,
+      spec: map['spec'] as String?,
+      unit: map['unit'] as String?,
       categoryId: map['category_id'] as int? ?? 0,
       imagePath: map['image_path'] as String?,
       wholesalePrice: (map['wholesale_price'] as num).toDouble(),
@@ -127,6 +135,8 @@ class Product {
     int? id,
     String? name,
     String? code,
+    String? spec,
+    String? unit,
     int? categoryId,
     String? imagePath,
     double? wholesalePrice,
@@ -142,6 +152,8 @@ class Product {
         id: id ?? this.id,
         name: name ?? this.name,
         code: code ?? this.code,
+        spec: spec ?? this.spec,
+        unit: unit ?? this.unit,
         categoryId: categoryId ?? this.categoryId,
         imagePath: imagePath ?? this.imagePath,
         wholesalePrice: wholesalePrice ?? this.wholesalePrice,

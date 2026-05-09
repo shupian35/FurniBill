@@ -42,6 +42,8 @@ void main() {
       id: 1,
       name: '真皮沙发',
       code: 'SF001',
+      spec: '三人位 2.2m',
+      unit: '套',
       categoryId: 1,
       wholesalePrice: 3500.0,
       retailPrice: 4500.0,
@@ -65,6 +67,23 @@ void main() {
       expect(restored.stock, 15);
       expect(restored.stockAlert, 5);
       expect(restored.remark, '进口头层牛皮');
+    });
+
+    test('spec and unit roundtrip', () {
+      final map = sampleProduct.toMap();
+      final restored = Product.fromMap(map);
+      expect(restored.spec, '三人位 2.2m');
+      expect(restored.unit, '套');
+    });
+
+    test('spec and unit default to null', () {
+      final product = Product(
+        name: '简单商品',
+        code: 'S001',
+        wholesalePrice: 100.0,
+      );
+      expect(product.spec, isNull);
+      expect(product.unit, isNull);
     });
 
     test('default values', () {

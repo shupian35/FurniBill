@@ -19,6 +19,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _codeCtrl = TextEditingController();
+  final _specCtrl = TextEditingController();
+  final _unitCtrl = TextEditingController();
   final _wholesalePriceCtrl = TextEditingController();
   final _retailPriceCtrl = TextEditingController();
   final _costPriceCtrl = TextEditingController();
@@ -42,6 +44,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
       final p = widget.product!;
       _nameCtrl.text = p.name;
       _codeCtrl.text = p.code;
+      _specCtrl.text = p.spec ?? '';
+      _unitCtrl.text = p.unit ?? '';
       _wholesalePriceCtrl.text = p.wholesalePrice.toString();
       _retailPriceCtrl.text = p.retailPrice?.toString() ?? '';
       _costPriceCtrl.text = p.costPrice?.toString() ?? '';
@@ -68,6 +72,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
   void dispose() {
     _nameCtrl.dispose();
     _codeCtrl.dispose();
+    _specCtrl.dispose();
+    _unitCtrl.dispose();
     _wholesalePriceCtrl.dispose();
     _retailPriceCtrl.dispose();
     _costPriceCtrl.dispose();
@@ -85,6 +91,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
       id: widget.product?.id,
       name: _nameCtrl.text.trim(),
       code: _codeCtrl.text.trim(),
+      spec: _specCtrl.text.trim().isEmpty ? null : _specCtrl.text.trim(),
+      unit: _unitCtrl.text.trim().isEmpty ? null : _unitCtrl.text.trim(),
       categoryId: _categoryId,
       imagePath: _imagePath,
       wholesalePrice: double.tryParse(_wholesalePriceCtrl.text) ?? 0,
@@ -186,6 +194,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
             TextFormField(controller: _nameCtrl, decoration: const InputDecoration(labelText: '商品名称 *', border: OutlineInputBorder()), validator: (v) => v?.trim().isEmpty == true ? '请输入名称' : null),
             const SizedBox(height: 12),
             TextFormField(controller: _codeCtrl, decoration: const InputDecoration(labelText: '货号', border: OutlineInputBorder(), hintText: '留空自动生成')),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(flex: 3, child: TextFormField(controller: _specCtrl, decoration: const InputDecoration(labelText: '规格', border: OutlineInputBorder(), hintText: '如 1.8m×2.0m'))),
+              const SizedBox(width: 12),
+              Expanded(flex: 1, child: TextFormField(controller: _unitCtrl, decoration: const InputDecoration(labelText: '单位', border: OutlineInputBorder(), hintText: '件'))),
+            ]),
             const SizedBox(height: 12),
             // 分类选择
             _buildCategorySelector(),

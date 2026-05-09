@@ -169,7 +169,17 @@ class _ProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('货号: ${product.code}'),
+              Row(children: [
+                Text('货号: ${product.code}'),
+                if (product.spec != null && product.spec!.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(product.spec!, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
+                ],
+                if (product.unit != null && product.unit!.isNotEmpty) ...[
+                  const SizedBox(width: 4),
+                  Text('/${product.unit}', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
+                ],
+              ]),
               Row(
                 children: [
                   AmountText(

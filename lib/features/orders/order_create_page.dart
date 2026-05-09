@@ -173,7 +173,17 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                     return ListTile(
                       leading: Icon(Icons.chair, color: Theme.of(context).colorScheme.primary),
                       title: Text(p.name),
-                      subtitle: AmountText(amount: p.wholesalePrice),
+                      subtitle: Row(children: [
+                        if (p.spec != null && p.spec!.isNotEmpty) ...[
+                          Text(p.spec!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
+                          const SizedBox(width: 8),
+                        ],
+                        AmountText(amount: p.wholesalePrice),
+                        if (p.unit != null && p.unit!.isNotEmpty) ...[
+                          const SizedBox(width: 4),
+                          Text('/${p.unit}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
+                        ],
+                      ]),
                       trailing: const Icon(Icons.add_circle_outline),
                       onTap: () => Navigator.pop(ctx, p),
                     );
@@ -190,6 +200,8 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
         _items.add(_OrderItemData(
           productId: result.id,
           name: result.name,
+          specSummary: result.spec,
+          unit: result.unit,
           price: result.wholesalePrice,
         ));
       });
@@ -450,7 +462,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                   if (i.specSummary != null && i.specSummary!.isNotEmpty)
                     Text(i.specSummary!, style: TextStyle(color: Theme.of(context).colorScheme.outline)),
                   Row(children: [
-                    Text('x${i.quantity}'),
+                    Text('x${i.quantity}${i.unit != null && i.unit!.isNotEmpty ? i.unit! : ""}'),
                     const SizedBox(width: 8),
                     AmountText(amount: i.price, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 13)),
                     if (i.discount < 1.0) ...[
@@ -607,6 +619,7 @@ class _OrderItemData {
   int? skuId;
   String name;
   String? specSummary;
+  String? unit;
   double quantity;
   double price;
   double discount;
@@ -617,6 +630,7 @@ class _OrderItemData {
     this.skuId,
     required this.name,
     this.specSummary,
+    this.unit,
     this.quantity = 1,
     required this.price,
     this.discount = 1.0,

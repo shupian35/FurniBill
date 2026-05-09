@@ -19,8 +19,9 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -39,6 +40,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         code TEXT NOT NULL UNIQUE,
+        spec TEXT,
+        unit TEXT DEFAULT '件',
         category_id INTEGER DEFAULT 0,
         image_path TEXT,
         wholesale_price REAL NOT NULL,
@@ -159,6 +162,13 @@ class DatabaseHelper {
         create_time TEXT NOT NULL
       )
     ''');
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute("ALTER TABLE products ADD COLUMN spec TEXT");
+      await db.execute("ALTER TABLE products ADD COLUMN unit TEXT DEFAULT '件'");
+    }
+  }
 
     // 插入默认分类
     final defaultCategories = [
