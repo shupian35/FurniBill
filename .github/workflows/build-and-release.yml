@@ -75,20 +75,22 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build iOS Debug
+      - name: Build iOS Debug (simulator)
+        run: flutter build ios --debug --simulator
+
+      - name: Package iOS app
         run: |
-          flutter build ios --debug --no-codesign
-          mkdir -p build/ios/ipa/Payload
-          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
-          cd build/ios/ipa
-          zip -r ../../furni_bill-debug.ipa Payload
+          mkdir -p build/ios/simulator
+          cp -r build/ios/iphonesimulator/Runner.app build/ios/simulator/
+          cd build/ios/simulator
+          zip -r ../../furni_bill-ios-simulator.zip Runner.app
           cd ../../..
 
-      - name: Upload IPA
+      - name: Upload iOS
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-ipa
-          path: build/furni_bill-debug.ipa
+          name: app-debug-ios
+          path: build/furni_bill-ios-simulator.zip
           retention-days: 30
 
   # ============================================================
@@ -106,10 +108,10 @@ jobs:
         with:
           name: app-debug-apk
 
-      - name: Download IPA
+      - name: Download iOS
         uses: actions/download-artifact@v4
         with:
-          name: app-debug-ipa
+          name: app-debug-ios
 
       - name: Generate release tag
         id: tag
@@ -133,10 +135,10 @@ jobs:
             | 文件 | 说明 |
             |---|---|
             | `app-debug.apk` | Android 调试安装包 |
-            | `furni_bill-debug.ipa` | iOS 调试安装包（未签名） |
+            | `furni_bill-ios-simulator.zip` | iOS 模拟器构建（需 macOS + Xcode 运行） |
           files: |
             app-debug.apk
-            furni_bill-debug.ipa
+            furni_bill-ios-simulator.zip
           draft: false
           prerelease: true
         env:
