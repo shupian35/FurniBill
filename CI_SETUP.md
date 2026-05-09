@@ -1,85 +1,42 @@
-# CI/CD 签名配置指南
+# CI/CD 构建指南
 
-GitHub Actions 已配置为自动构建 Android APK/AAB 和 iOS IPA。
-要启用 Release 签名，需在仓库设置中添加以下 Secrets。
+GitHub Actions 在每次推送 `main` 分支时自动构建 Android APK 和 iOS IPA（Debug），
+构建完成后自动发布为 GitHub Release。
 
 ---
 
-## Android 签名（Google Play 上架必需）
+## 产物
 
-### 1. 生成上传密钥
-
-```bash
-keytool -genkey -v -keystore upload-keystore.jks \
-  -keyalg RSA -keysize 2048 -validity 10000 \
-  -alias upload -storetype JKS
-```
-
-按提示填写信息，记录好密码和别名。
-
-### 2. 编码并上传到 GitHub Secrets
-
-```bash
-# 将 keystore 文件编码为 base64
-base64 -i upload-keystore.jks
-
-# Windows PowerShell:
-[Convert]::ToBase64String([IO.File]::ReadAllBytes("upload-keystore.jks"))
-```
-
-在 GitHub 仓库 → Settings → Secrets and variables → Actions，添加：
-
-| Secret 名称 | 值 |
+| 文件 | 说明 |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | 上一步输出的 base64 字符串 |
-| `ANDROID_KEYSTORE_PASSWORD` | keystore 密码 |
-| `ANDROID_KEY_ALIAS` | 密钥别名（如 `upload`） |
-| `ANDROID_KEY_PASSWORD` | 密钥密码 |
+| `app-debug.apk` | Android 调试安装包 |
+| `furni_bill-debug.ipa` | iOS 调试安装包（未签名，需自行签名安装） |
 
 ---
 
-## iOS 签名（App Store 上架必需）
+## 自动发布
 
-需要 Apple Developer 账号（$99/年）。
+每次 push `main` 分支后：
 
-### 步骤
+1. GitHub Actions 自动并行构建 Android + iOS
+2. 构建成功后自动创建 GitHub Release（标记为 pre-release）
+3. Release 命名格式：`v20260509-build1`（日期 + 运行编号）
 
-1. 在 [Apple Developer](https://developer.apple.com) 创建 App ID 和分发证书
-2. 导出证书为 `.p12` 文件（含私钥）
-3. 下载 `.mobileprovision` 配置文件
-
-```bash
-# 编码证书
-base64 -i distribution.p12
-
-# 编码配置文件
-base64 -i build.mobileprovision
-```
-
-在 GitHub Secrets 中添加：
-
-| Secret 名称 | 值 |
-|---|---|
-| `IOS_P12_BASE64` | p12 证书的 base64 |
-| `IOS_P12_PASSWORD` | p12 证书密码 |
-| `IOS_PROVISION_PROFILE_BASE64` | mobileprovision 的 base64 |
-
-### 手动触发签名构建
-
-Actions → iOS Build → Run workflow → 勾选 `codesign` → Run workflow
+在仓库的 **Releases** 页面即可下载。
 
 ---
 
-## 默认行为
+## 手动触发
 
-- **未配置 Secrets 时**：自动使用 debug 签名构建，可用于内部测试
-- **push main 分支**：自动触发 Android Release 构建（有 Secret 则签名）
-- **手动触发**：Actions 页面选择 build_type（debug/release/both）
+Actions → Build & Release → Run workflow → Run workflow
 
-## 下载构建产物
+---
 
-Actions → 选择某次运行 → Artifacts → 下载对应文件：
-- `app-debug` — 调试 APK（7 天保留）
-- `app-release` — 正式 APK（30 天保留）
-- `app-release-aab` — Google Play 上架 AAB（90 天保留）
-- `ios-release` — iOS IPA（30 天保留）
+## 安装说明
+
+### Android
+直接安装 `app-debug.apk`，需允许「未知来源」安装。
+
+### iOS
+未签名 IPA 需要通过 AltStore / Sideloadly 等工具签名后安装，
+或使用 Apple Developer 账号自行签名。

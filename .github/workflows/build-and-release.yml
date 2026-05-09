@@ -1,0 +1,140 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  workflow_dispatch:
+
+env:
+  APP_NAME: furni_bill
+
+jobs:
+  # ============================================================
+  # Android Debug APK
+  # ============================================================
+  build-android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Debug APK
+        run: flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
+
+  # ============================================================
+  # iOS Debug (unsigned)
+  # ============================================================
+  build-ios:
+    name: iOS App
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build iOS Debug
+        run: |
+          flutter build ios --debug --no-codesign
+          mkdir -p build/ios/ipa/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cd build/ios/ipa
+          zip -r ../../furni_bill-debug.ipa Payload
+          cd ../../..
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-ipa
+          path: build/furni_bill-debug.ipa
+          retention-days: 30
+
+  # ============================================================
+  # Create GitHub Release
+  # ============================================================
+  release:
+    name: Publish Release
+    needs: [build-android, build-ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-debug-apk
+
+      - name: Download IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: app-debug-ipa
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          TAG="v$(date +'%Y%m%d')-build${GITHUB_RUN_NUMBER}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "$TAG"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          body: |
+            ### 构建信息
+            - **提交**: ${{ github.sha }}
+            - **分支**: ${{ github.ref_name }}
+            - **运行编号**: #${{ github.run_number }}
+
+            ### 产物
+            | 文件 | 说明 |
+            |---|---|
+            | `app-debug.apk` | Android 调试安装包 |
+            | `furni_bill-debug.ipa` | iOS 调试安装包（未签名） |
+          files: |
+            app-debug.apk
+            furni_bill-debug.ipa
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
