@@ -4,7 +4,7 @@ import 'package:furni_bill/core/constants/app_constants.dart';
 void main() {
   group('AppConstants', () {
     test('app name', () {
-      expect(AppConstants.appName, '家具备货单');
+      expect(AppConstants.appName, '简易开单');
     });
 
     test('app version', () {

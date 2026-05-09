@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = '家具备货单';
+  static const String appName = '简易开单';
   static const String appVersion = '1.0.0';
 
   // 收款方式

@@ -27,8 +27,11 @@ class PrintPreviewPage extends StatelessWidget {
   }
 
   Future<Uint8List> _buildPdf(PdfPageFormat format, SettingsProvider settings) async {
-    // 加载中文字体
     final font = await _loadChineseFont();
+
+    // 便捷样式工厂
+    pw.TextStyle ts(double size, {bool bold = false, PdfColor? color}) =>
+        pw.TextStyle(font: font, fontSize: size, fontWeight: bold ? pw.FontWeight.bold : null, color: color);
 
     final pdf = pw.Document();
     final shopName = settings.shopName.isNotEmpty ? settings.shopName : '店铺名称';
@@ -43,7 +46,6 @@ class PrintPreviewPage extends StatelessWidget {
       final isFirst = i == 0;
       pdf.addPage(pw.Page(
         pageFormat: PdfPageFormat.a4,
-        theme: pw.ThemeData.withFont(base: font),
         build: (ctx) {
           return pw.Container(
             padding: const pw.EdgeInsets.all(20),
@@ -61,17 +63,17 @@ class PrintPreviewPage extends StatelessWidget {
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text(labels[i], style: pw.TextStyle(color: colors[i], fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('NO. ${order.orderNo}', style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text(labels[i], style: ts(12, bold: true, color: colors[i])),
+                    pw.Text('NO. ${order.orderNo}', style: ts(10)),
                   ],
                 ),
                 pw.SizedBox(height: 8),
-                pw.Center(child: pw.Text(shopName, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold))),
+                pw.Center(child: pw.Text(shopName, style: ts(18, bold: true))),
                 if (shopPhone != null || shopAddress != null)
                   pw.Center(
                     child: pw.Text(
                       [shopPhone, shopAddress].where((s) => s != null && s.isNotEmpty).join('  |  '),
-                      style: const pw.TextStyle(fontSize: 9),
+                      style: ts(9),
                     ),
                   ),
                 pw.SizedBox(height: 8),
@@ -79,14 +81,14 @@ class PrintPreviewPage extends StatelessWidget {
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('客户: ${order.customerName ?? ""}', style: const pw.TextStyle(fontSize: 11)),
-                    pw.Text('日期: $dateStr', style: const pw.TextStyle(fontSize: 11)),
+                    pw.Text('客户: ${order.customerName ?? ""}', style: ts(11)),
+                    pw.Text('日期: $dateStr', style: ts(11)),
                   ],
                 ),
                 if (order.clerk != null)
-                  pw.Text('经手人: ${order.clerk}', style: const pw.TextStyle(fontSize: 11)),
+                  pw.Text('经手人: ${order.clerk}', style: ts(11)),
                 pw.SizedBox(height: 8),
-                _buildTable(ctx),
+                _buildTable(font),
                 pw.SizedBox(height: 8),
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.end,
@@ -94,14 +96,14 @@ class PrintPreviewPage extends StatelessWidget {
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        _buildTotalRow('总额', order.totalAmount),
+                        _buildTotalRow('总额', order.totalAmount, font),
                         if (order.orderDiscount < 1.0)
-                          _buildTotalRow('折扣 -${((1 - order.orderDiscount) * 100).toStringAsFixed(0)}%', -order.discountAmount),
-                        if (order.roundOff > 0) _buildTotalRow('抹零', -order.roundOff),
+                          _buildTotalRow('折扣 -${((1 - order.orderDiscount) * 100).toStringAsFixed(0)}%', -order.discountAmount, font),
+                        if (order.roundOff > 0) _buildTotalRow('抹零', -order.roundOff, font),
                         pw.Divider(),
-                        _buildTotalRow('应收', order.receivable, bold: true),
-                        _buildTotalRow('实收', order.received),
-                        if (order.owing > 0) _buildTotalRow('欠款', order.owing),
+                        _buildTotalRow('应收', order.receivable, font, bold: true),
+                        _buildTotalRow('实收', order.received, font),
+                        if (order.owing > 0) _buildTotalRow('欠款', order.owing, font),
                       ],
                     ),
                   ],
@@ -110,23 +112,17 @@ class PrintPreviewPage extends StatelessWidget {
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
-                    pw.Text('客户签收: ____________', style: const pw.TextStyle(fontSize: 11)),
-                    pw.Text('日期: ____________', style: const pw.TextStyle(fontSize: 11)),
+                    pw.Text('客户签收: ____________', style: ts(11)),
+                    pw.Text('日期: ____________', style: ts(11)),
                   ],
                 ),
                 pw.SizedBox(height: 16),
                 pw.Divider(),
                 pw.Center(
-                  child: pw.Text(
-                    settings.footerText,
-                    style: pw.TextStyle(fontSize: 9, color: PdfColors.grey),
-                  ),
+                  child: pw.Text(settings.footerText, style: ts(9, color: PdfColors.grey)),
                 ),
                 pw.Center(
-                  child: pw.Text(
-                    '备注: ${order.remark ?? ""}',
-                    style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey),
-                  ),
+                  child: pw.Text('备注: ${order.remark ?? ""}', style: ts(9, color: PdfColors.grey)),
                 ),
               ],
             ),
@@ -137,28 +133,24 @@ class PrintPreviewPage extends StatelessWidget {
     return pdf.save();
   }
 
-  /// 加载中文字体，优先尝试 Noto Sans SC 和 DroidSansFallback
   Future<pw.Font> _loadChineseFont() async {
     const candidates = [
       'assets/fonts/NotoSansSC-Regular.ttf',
       'assets/fonts/DroidSansFallback.ttf',
       'assets/fonts/chinese.ttf',
     ];
-
     for (final path in candidates) {
       try {
-        final data = await rootBundle.load(path);
-        return pw.Font.ttf(data);
-      } catch (_) {
-        continue;
-      }
+        return pw.Font.ttf(await rootBundle.load(path));
+      } catch (_) {}
     }
-
-    // 回退：pdf 内置字体（中文将显示为空白/方块）
     return pw.Font.helvetica();
   }
 
-  pw.Widget _buildTable(pw.Context ctx) {
+  pw.Widget _buildTable(pw.Font font) {
+    pw.TextStyle ts(double size, {bool bold = false}) =>
+        pw.TextStyle(font: font, fontSize: size, fontWeight: bold ? pw.FontWeight.bold : null);
+
     return pw.Table(
       border: pw.TableBorder.all(color: PdfColors.grey, width: 0.5),
       columnWidths: {
@@ -172,42 +164,46 @@ class PrintPreviewPage extends StatelessWidget {
         pw.TableRow(
           decoration: const pw.BoxDecoration(color: PdfColors.grey200),
           children: [
-            _cell('品名', bold: true),
-            _cell('规格', bold: true),
-            _cell('数量', bold: true),
-            _cell('单价', bold: true),
-            _cell('金额', bold: true),
+            _cell('品名', font, bold: true),
+            _cell('规格', font, bold: true),
+            _cell('数量', font, bold: true),
+            _cell('单价', font, bold: true),
+            _cell('金额', font, bold: true),
           ],
         ),
         ...order.items.map((item) => pw.TableRow(
           children: [
-            _cell(item.name),
-            _cell(item.specSummary ?? ''),
-            _cell(item.quantity.toString()),
-            _cell('¥${item.price.toStringAsFixed(2)}'),
-            _cell('¥${item.amount.toStringAsFixed(2)}'),
+            _cell(item.name, font),
+            _cell(item.specSummary ?? '', font),
+            _cell(item.quantity.toString(), font),
+            _cell('¥${item.price.toStringAsFixed(2)}', font),
+            _cell('¥${item.amount.toStringAsFixed(2)}', font),
           ],
         )),
       ],
     );
   }
 
-  pw.Widget _cell(String text, {bool bold = false}) {
+  pw.Widget _cell(String text, pw.Font font, {bool bold = false}) {
     return pw.Padding(
       padding: const pw.EdgeInsets.all(4),
-      child: pw.Text(text, style: pw.TextStyle(fontSize: 9, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(font: font, fontSize: 9, fontWeight: bold ? pw.FontWeight.bold : null),
+      ),
     );
   }
 
-  pw.Widget _buildTotalRow(String label, double amount, {bool bold = false}) {
+  pw.Widget _buildTotalRow(String label, double amount, pw.Font font, {bool bold = false}) {
+    pw.TextStyle ts(double size) => pw.TextStyle(font: font, fontSize: size, fontWeight: bold ? pw.FontWeight.bold : null);
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 1),
       child: pw.Row(
         mainAxisSize: pw.MainAxisSize.min,
         children: [
-          pw.SizedBox(width: 120, child: pw.Text(label, style: pw.TextStyle(fontSize: 10, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal), textAlign: pw.TextAlign.right)),
+          pw.SizedBox(width: 120, child: pw.Text(label, style: ts(10), textAlign: pw.TextAlign.right)),
           pw.SizedBox(width: 8),
-          pw.SizedBox(width: 80, child: pw.Text('¥${amount.toStringAsFixed(2)}', style: pw.TextStyle(fontSize: 10, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal), textAlign: pw.TextAlign.right)),
+          pw.SizedBox(width: 80, child: pw.Text('¥${amount.toStringAsFixed(2)}', style: ts(10), textAlign: pw.TextAlign.right)),
         ],
       ),
     );
