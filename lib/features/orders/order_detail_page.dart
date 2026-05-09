@@ -116,7 +116,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       await orderProvider.cancelOrder(_order!.id!);
       for (final item in _order!.items) {
         if (item.productId != null) {
-          await productProvider.updateStock(item.productId!, item.skuId, item.quantity.toInt());
+          await productProvider.updateStock(item.productId!, item.quantity.toInt());
         }
       }
       await _loadOrder();

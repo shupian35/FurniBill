@@ -171,7 +171,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                           Text(p.spec!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
                           const SizedBox(width: 8),
                         ],
-                        AmountText(amount: p.wholesalePrice),
+                        AmountText(amount: p.price),
                         if (p.unit != null && p.unit!.isNotEmpty) ...[
                           const SizedBox(width: 4),
                           Text('/${p.unit}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
@@ -195,7 +195,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
           name: result.name,
           specSummary: result.spec,
           unit: result.unit,
-          price: result.wholesalePrice,
+          price: result.price,
         ));
       });
     }
@@ -325,7 +325,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       // 扣库存
       for (final item in items) {
         if (item.productId != null) {
-          await productProvider.updateStock(item.productId!, item.skuId, -item.quantity.toInt());
+          await productProvider.updateStock(item.productId!, -item.quantity.toInt());
         }
       }
 

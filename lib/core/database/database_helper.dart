@@ -19,7 +19,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -27,47 +27,15 @@ class DatabaseHelper {
 
   Future<void> _createDB(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE categories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        sort_order INTEGER DEFAULT 0,
-        create_time TEXT NOT NULL
-      )
-    ''');
-
-    await db.execute('''
       CREATE TABLE products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        code TEXT NOT NULL UNIQUE,
         spec TEXT,
-        unit TEXT DEFAULT '件',
-        category_id INTEGER DEFAULT 0,
-        image_path TEXT,
-        wholesale_price REAL NOT NULL,
-        retail_price REAL,
-        cost_price REAL,
-        stock INTEGER DEFAULT 0,
-        stock_alert INTEGER DEFAULT 0,
-        sku_enabled INTEGER DEFAULT 0,
-        attributes_schema TEXT,
-        remark TEXT,
-        create_time TEXT NOT NULL,
-        update_time TEXT NOT NULL
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE skus (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id INTEGER NOT NULL,
-        attrs TEXT NOT NULL,
-        attrs_summary TEXT NOT NULL,
+        unit TEXT,
         price REAL NOT NULL,
         stock INTEGER DEFAULT 0,
-        barcode TEXT,
         create_time TEXT NOT NULL,
-        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        update_time TEXT NOT NULL
       )
     ''');
 
@@ -125,7 +93,6 @@ class DatabaseHelper {
       CREATE TABLE inventory_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id INTEGER,
-        sku_id INTEGER,
         change_amount INTEGER NOT NULL,
         after_stock INTEGER NOT NULL,
         reason TEXT NOT NULL,
@@ -155,18 +122,6 @@ class DatabaseHelper {
         create_time TEXT NOT NULL
       )
     ''');
-
-    // 插入默认分类
-    final defaultCategories = [
-      '沙发', '床', '餐桌', '柜类', '办公家具', '茶几', '电视柜', '鞋柜', '其他'
-    ];
-    for (var i = 0; i < defaultCategories.length; i++) {
-      await db.insert('categories', {
-        'name': defaultCategories[i],
-        'sort_order': i,
-        'create_time': DateTime.now().toIso8601String(),
-      });
-    }
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -175,7 +130,6 @@ class DatabaseHelper {
       await db.execute("ALTER TABLE products ADD COLUMN unit TEXT DEFAULT '件'");
     }
     if (oldVersion < 3) {
-      // Recreate customers table with simplified schema
       await db.execute('''
         CREATE TABLE customers_new (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -192,6 +146,30 @@ class DatabaseHelper {
       );
       await db.execute('DROP TABLE customers');
       await db.execute('ALTER TABLE customers_new RENAME TO customers');
+    }
+    if (oldVersion < 4) {
+      // Drop old tables that are no longer used
+      await db.execute('DROP TABLE IF EXISTS categories');
+      await db.execute('DROP TABLE IF EXISTS skus');
+      // Recreate products with simplified schema
+      await db.execute('''
+        CREATE TABLE products_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          spec TEXT,
+          unit TEXT,
+          price REAL NOT NULL,
+          stock INTEGER DEFAULT 0,
+          create_time TEXT NOT NULL,
+          update_time TEXT NOT NULL
+        )
+      ''');
+      await db.execute(
+        'INSERT INTO products_new (id, name, spec, unit, price, stock, create_time, update_time) '
+        'SELECT id, name, spec, unit, wholesale_price, stock, create_time, update_time FROM products'
+      );
+      await db.execute('DROP TABLE products');
+      await db.execute('ALTER TABLE products_new RENAME TO products');
     }
   }
 

@@ -71,21 +71,6 @@ class SettingsPage extends StatelessWidget {
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WebdavPage())),
               ),
               const Divider(),
-              // 三联单显示选项
-              SwitchListTile(
-                secondary: const Icon(Icons.visibility),
-                title: const Text('显示零售价'),
-                subtitle: const Text('三联单中显示零售价列'),
-                value: settings.showRetailPrice,
-                onChanged: settings.setShowRetailPrice,
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.visibility_off),
-                title: const Text('显示成本价'),
-                subtitle: const Text('三联单中显示成本价列'),
-                value: settings.showCostPrice,
-                onChanged: settings.setShowCostPrice,
-              ),
             ],
           );
         },
