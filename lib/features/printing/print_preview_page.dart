@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
@@ -26,6 +27,9 @@ class PrintPreviewPage extends StatelessWidget {
   }
 
   Future<Uint8List> _buildPdf(PdfPageFormat format, SettingsProvider settings) async {
+    // 加载中文字体
+    final font = await _loadChineseFont();
+
     final pdf = pw.Document();
     final shopName = settings.shopName.isNotEmpty ? settings.shopName : '店铺名称';
     final shopPhone = settings.shopPhone.isNotEmpty ? settings.shopPhone : null;
@@ -39,13 +43,13 @@ class PrintPreviewPage extends StatelessWidget {
       final isFirst = i == 0;
       pdf.addPage(pw.Page(
         pageFormat: PdfPageFormat.a4,
+        theme: pw.ThemeData.withFont(base: font),
         build: (ctx) {
           return pw.Container(
             padding: const pw.EdgeInsets.all(20),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // 三联标签
                 if (!isFirst)
                   pw.Container(
                     width: double.infinity,
@@ -62,7 +66,6 @@ class PrintPreviewPage extends StatelessWidget {
                   ],
                 ),
                 pw.SizedBox(height: 8),
-                // 抬头
                 pw.Center(child: pw.Text(shopName, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold))),
                 if (shopPhone != null || shopAddress != null)
                   pw.Center(
@@ -73,7 +76,6 @@ class PrintPreviewPage extends StatelessWidget {
                   ),
                 pw.SizedBox(height: 8),
                 pw.Divider(),
-                // 客户信息 / 单据信息
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
@@ -84,10 +86,8 @@ class PrintPreviewPage extends StatelessWidget {
                 if (order.clerk != null)
                   pw.Text('经手人: ${order.clerk}', style: const pw.TextStyle(fontSize: 11)),
                 pw.SizedBox(height: 8),
-                // 商品表格
                 _buildTable(ctx),
                 pw.SizedBox(height: 8),
-                // 合计
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.end,
                   children: [
@@ -107,7 +107,6 @@ class PrintPreviewPage extends StatelessWidget {
                   ],
                 ),
                 pw.SizedBox(height: 12),
-                // 签收栏
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
@@ -117,7 +116,6 @@ class PrintPreviewPage extends StatelessWidget {
                 ),
                 pw.SizedBox(height: 16),
                 pw.Divider(),
-                // 底部
                 pw.Center(
                   child: pw.Text(
                     settings.footerText,
@@ -139,6 +137,27 @@ class PrintPreviewPage extends StatelessWidget {
     return pdf.save();
   }
 
+  /// 加载中文字体，优先尝试 Noto Sans SC 和 DroidSansFallback
+  Future<pw.Font> _loadChineseFont() async {
+    const candidates = [
+      'assets/fonts/NotoSansSC-Regular.ttf',
+      'assets/fonts/DroidSansFallback.ttf',
+      'assets/fonts/chinese.ttf',
+    ];
+
+    for (final path in candidates) {
+      try {
+        final data = await rootBundle.load(path);
+        return pw.Font.ttf(data);
+      } catch (_) {
+        continue;
+      }
+    }
+
+    // 回退：pdf 内置字体（中文将显示为空白/方块）
+    return pw.Font.helvetica();
+  }
+
   pw.Widget _buildTable(pw.Context ctx) {
     return pw.Table(
       border: pw.TableBorder.all(color: PdfColors.grey, width: 0.5),
@@ -150,7 +169,6 @@ class PrintPreviewPage extends StatelessWidget {
         4: const pw.FlexColumnWidth(1.5),
       },
       children: [
-        // 表头
         pw.TableRow(
           decoration: const pw.BoxDecoration(color: PdfColors.grey200),
           children: [
@@ -161,7 +179,6 @@ class PrintPreviewPage extends StatelessWidget {
             _cell('金额', bold: true),
           ],
         ),
-        // 数据行
         ...order.items.map((item) => pw.TableRow(
           children: [
             _cell(item.name),
