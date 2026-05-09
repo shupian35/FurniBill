@@ -87,18 +87,12 @@ class PrintPreviewPage extends StatelessWidget {
             // ═══════ 页脚联系信息 ═══════
             pw.Divider(),
             pw.SizedBox(height: 4),
-            pw.Text(
-              '订货电话：13763921269（微信号）  15083211281（微信号）',
-              style: ts(9),
-            ),
-            pw.Text(
-              '订货地址：南康东山桥南大道坪塘工业园',
-              style: ts(9),
-            ),
-            pw.Text(
-              '农行：6228 4534 7002 3535 717  户名（谢月亮）',
-              style: ts(9),
-            ),
+            if (settings.shopPhone.isNotEmpty)
+              pw.Text('订货电话：${settings.shopPhone}', style: ts(9)),
+            if (settings.shopAddress.isNotEmpty)
+              pw.Text('订货地址：${settings.shopAddress}', style: ts(9)),
+            if (settings.bankAccount.isNotEmpty)
+              pw.Text('${settings.bankAccount}', style: ts(9)),
           ],
         );
       },

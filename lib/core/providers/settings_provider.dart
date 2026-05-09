@@ -10,6 +10,7 @@ class SettingsProvider extends ChangeNotifier {
   String _shopName = '';
   String _shopPhone = '';
   String _shopAddress = '';
+  String _bankAccount = '';
   String _footerText = '感谢您的惠顾，请妥善保管此单据';
 
   // WebDAV
@@ -27,6 +28,7 @@ class SettingsProvider extends ChangeNotifier {
   String get shopName => _shopName;
   String get shopPhone => _shopPhone;
   String get shopAddress => _shopAddress;
+  String get bankAccount => _bankAccount;
   String get footerText => _footerText;
   String get webdavUrl => _webdavUrl;
   String get webdavUser => _webdavUser;
@@ -44,6 +46,7 @@ class SettingsProvider extends ChangeNotifier {
     _shopName = prefs.getString('shop_name') ?? '';
     _shopPhone = prefs.getString('shop_phone') ?? '';
     _shopAddress = prefs.getString('shop_address') ?? '';
+    _bankAccount = prefs.getString('bank_account') ?? '';
     _footerText = prefs.getString('footer_text') ?? '感谢您的惠顾，请妥善保管此单据';
     _webdavUrl = prefs.getString('webdav_url') ?? '';
     _webdavUser = prefs.getString('webdav_user') ?? '';
@@ -72,6 +75,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setShopName(String v) async { _shopName = v; await _save('shop_name', v); notifyListeners(); }
   Future<void> setShopPhone(String v) async { _shopPhone = v; await _save('shop_phone', v); notifyListeners(); }
   Future<void> setShopAddress(String v) async { _shopAddress = v; await _save('shop_address', v); notifyListeners(); }
+  Future<void> setBankAccount(String v) async { _bankAccount = v; await _save('bank_account', v); notifyListeners(); }
   Future<void> setFooterText(String v) async { _footerText = v; await _save('footer_text', v); notifyListeners(); }
   Future<void> setWebdavUrl(String v) async { _webdavUrl = v; await _save('webdav_url', v); notifyListeners(); }
   Future<void> setWebdavUser(String v) async { _webdavUser = v; await _save('webdav_user', v); notifyListeners(); }
