@@ -73,12 +73,25 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
       remark: _remarkCtrl.text.trim(),
       owing: widget.customer?.owing ?? 0,
     );
-    if (isEdit) {
-      await provider.updateCustomer(customer);
-    } else {
-      await provider.addCustomer(customer);
+    try {
+      int? savedId = customer.id;
+      if (isEdit) {
+        await provider.updateCustomer(customer);
+      } else {
+        savedId = await provider.addCustomer(customer);
+      }
+      if (mounted) {
+        final saved = isEdit ? customer : provider.getById(savedId!);
+        Navigator.pop(context, saved ?? customer);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存失败：$e')),
+        );
+      }
     }
-    if (mounted) Navigator.pop(context, true);
   }
 
   @override

@@ -274,109 +274,127 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       return;
     }
     setState(() => _saving = true);
-    final orderProvider = context.read<OrderProvider>();
-    final customerProvider = context.read<CustomerProvider>();
-    final productProvider = context.read<ProductProvider>();
+    try {
+      final orderProvider = context.read<OrderProvider>();
+      final customerProvider = context.read<CustomerProvider>();
+      final productProvider = context.read<ProductProvider>();
 
-    final orderNo = isDraftEdit ? widget.draft!.orderNo : orderProvider.generateOrderNo();
-    final items = _items.map((i) => OrderItem(
-      productId: i.productId,
-      skuId: i.skuId,
-      name: i.name,
-      specSummary: i.specSummary,
-      quantity: i.quantity,
-      price: i.price,
-      discount: i.discount,
-      remark: i.remark,
-    )).toList();
+      final orderNo = isDraftEdit ? widget.draft!.orderNo : orderProvider.generateOrderNo();
+      final items = _items.map((i) => OrderItem(
+        productId: i.productId,
+        skuId: i.skuId,
+        name: i.name,
+        specSummary: i.specSummary,
+        quantity: i.quantity,
+        price: i.price,
+        discount: i.discount,
+        remark: i.remark,
+      )).toList();
 
-    final order = Order(
-      id: widget.draft?.id,
-      orderNo: orderNo,
-      customerId: _selectedCustomer!.id!,
-      customerName: _selectedCustomer!.name,
-      items: items,
-      totalAmount: _totalAmount,
-      orderDiscount: _orderDiscount,
-      discountAmount: _discountAmount,
-      roundOff: _roundOff,
-      receivable: _receivable,
-      received: _received,
-      owing: _owing,
-      status: 'completed',
-      clerk: _clerk,
-      remark: _remark,
-      paymentMethod: _paymentMethod,
-      isDraft: false,
-      completeTime: DateTime.now(),
-    );
+      final order = Order(
+        id: widget.draft?.id,
+        orderNo: orderNo,
+        customerId: _selectedCustomer!.id!,
+        customerName: _selectedCustomer!.name,
+        items: items,
+        totalAmount: _totalAmount,
+        orderDiscount: _orderDiscount,
+        discountAmount: _discountAmount,
+        roundOff: _roundOff,
+        receivable: _receivable,
+        received: _received,
+        owing: _owing,
+        status: 'completed',
+        clerk: _clerk,
+        remark: _remark,
+        paymentMethod: _paymentMethod,
+        isDraft: false,
+        completeTime: DateTime.now(),
+      );
 
-    if (isDraftEdit) {
-      await orderProvider.updateOrder(order);
-    } else {
-      await orderProvider.saveOrder(order);
-    }
-
-    if (_owing > 0) {
-      await customerProvider.updateOwing(_selectedCustomer!.id!, _owing);
-    }
-
-    // 扣库存
-    for (final item in items) {
-      if (item.productId != null) {
-        await productProvider.updateStock(item.productId!, item.skuId, -item.quantity.toInt());
+      if (isDraftEdit) {
+        await orderProvider.updateOrder(order);
+      } else {
+        await orderProvider.saveOrder(order);
       }
-    }
 
-    if (mounted) {
-      setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('开单成功')));
-      // 弹出到订单列表并打开打印预览
-      Navigator.pop(context, true);
-      Navigator.push(context, MaterialPageRoute(
-        builder: (_) => PrintPreviewPage(order: order),
-      ));
+      if (_owing > 0) {
+        await customerProvider.updateOwing(_selectedCustomer!.id!, _owing);
+      }
+
+      // 扣库存
+      for (final item in items) {
+        if (item.productId != null) {
+          await productProvider.updateStock(item.productId!, item.skuId, -item.quantity.toInt());
+        }
+      }
+
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('开单成功')));
+        // 弹出到订单列表并打开打印预览
+        Navigator.pop(context, true);
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => PrintPreviewPage(order: order),
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('开单失败：$e')),
+        );
+      }
     }
   }
 
   Future<void> _saveDraft() async {
     if (_items.isEmpty) return;
     setState(() => _saving = true);
-    final orderProvider = context.read<OrderProvider>();
-    final orderNo = isDraftEdit ? widget.draft!.orderNo : orderProvider.generateOrderNo();
-    final items = _items.map((i) => OrderItem(
-      productId: i.productId, skuId: i.skuId,
-      name: i.name, specSummary: i.specSummary,
-      quantity: i.quantity, price: i.price,
-      discount: i.discount, remark: i.remark,
-    )).toList();
+    try {
+      final orderProvider = context.read<OrderProvider>();
+      final orderNo = isDraftEdit ? widget.draft!.orderNo : orderProvider.generateOrderNo();
+      final items = _items.map((i) => OrderItem(
+        productId: i.productId, skuId: i.skuId,
+        name: i.name, specSummary: i.specSummary,
+        quantity: i.quantity, price: i.price,
+        discount: i.discount, remark: i.remark,
+      )).toList();
 
-    final order = Order(
-      id: widget.draft?.id,
-      orderNo: orderNo,
-      customerId: _selectedCustomer?.id ?? 0,
-      customerName: _selectedCustomer?.name,
-      items: items,
-      totalAmount: _totalAmount,
-      orderDiscount: _orderDiscount,
-      discountAmount: _discountAmount,
-      roundOff: _roundOff,
-      receivable: _receivable,
-      remark: _remark,
-      isDraft: true,
-      clerk: _clerk,
-    );
+      final order = Order(
+        id: widget.draft?.id,
+        orderNo: orderNo,
+        customerId: _selectedCustomer?.id ?? 0,
+        customerName: _selectedCustomer?.name,
+        items: items,
+        totalAmount: _totalAmount,
+        orderDiscount: _orderDiscount,
+        discountAmount: _discountAmount,
+        roundOff: _roundOff,
+        receivable: _receivable,
+        remark: _remark,
+        isDraft: true,
+        clerk: _clerk,
+      );
 
-    if (isDraftEdit) {
-      await orderProvider.updateOrder(order);
-    } else {
-      await orderProvider.saveOrder(order);
-    }
+      if (isDraftEdit) {
+        await orderProvider.updateOrder(order);
+      } else {
+        await orderProvider.saveOrder(order);
+      }
 
-    if (mounted) {
-      setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已保存草稿')));
-      Navigator.pop(context, true);
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已保存草稿')));
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存草稿失败：$e')),
+        );
+      }
     }
   }
 
