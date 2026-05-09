@@ -163,13 +163,6 @@ class DatabaseHelper {
       )
     ''');
 
-  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.execute("ALTER TABLE products ADD COLUMN spec TEXT");
-      await db.execute("ALTER TABLE products ADD COLUMN unit TEXT DEFAULT '件'");
-    }
-  }
-
     // 插入默认分类
     final defaultCategories = [
       '沙发', '床', '餐桌', '柜类', '办公家具', '茶几', '电视柜', '鞋柜', '其他'
@@ -180,6 +173,13 @@ class DatabaseHelper {
         'sort_order': i,
         'create_time': DateTime.now().toIso8601String(),
       });
+    }
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute("ALTER TABLE products ADD COLUMN spec TEXT");
+      await db.execute("ALTER TABLE products ADD COLUMN unit TEXT DEFAULT '件'");
     }
   }
 
