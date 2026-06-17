@@ -62,10 +62,19 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateStock(int productId, int change) async {
+  Future<void> updateStock(int productId, int change, {String? orderNo}) async {
     final product = _products.firstWhere((p) => p.id == productId);
-    await _db.update('products', {'stock': product.stock + change},
+    final newStock = product.stock + change;
+    await _db.update('products', {'stock': newStock},
         where: 'id = ?', whereArgs: [productId]);
+    await _db.insert('inventory_logs', {
+      'product_id': productId,
+      'change_amount': change,
+      'after_stock': newStock,
+      'reason': change > 0 ? '补货' : '销售出库',
+      'order_no': orderNo,
+      'create_time': DateTime.now().toIso8601String(),
+    });
     await _loadProducts();
     notifyListeners();
   }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// 订单商品明细
 class OrderItem {
   int? productId;
@@ -104,7 +106,7 @@ class Order {
         'order_no': orderNo,
         'customer_id': customerId,
         'customer_name': customerName,
-        'items': items.map((i) => i.toJson()).toList().toString(),
+        'items': jsonEncode(items.map((i) => i.toJson()).toList()),
         'total_amount': totalAmount,
         'order_discount': orderDiscount,
         'discount_amount': discountAmount,
@@ -157,5 +159,10 @@ class Order {
 }
 
 List<OrderItem> _parseOrderItems(String raw) {
-  return [];
+  try {
+    final list = jsonDecode(raw) as List;
+    return list.map((e) => OrderItem.fromJson(e as Map<String, dynamic>)).toList();
+  } catch (_) {
+    return [];
+  }
 }

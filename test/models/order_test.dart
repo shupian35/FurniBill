@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:furni_bill/core/models/order.dart';
 
@@ -170,6 +171,27 @@ void main() {
       map['items'] = '[]';
       final restored = Order.fromMap(map);
       expect(restored.items, isEmpty);
+    });
+
+    test('toMap / fromMap preserves order items', () {
+      final map = sampleOrder.toMap();
+      final restored = Order.fromMap(map);
+
+      expect(restored.items.length, 2);
+      expect(restored.items[0].productId, 1);
+      expect(restored.items[0].name, '沙发');
+      expect(restored.items[0].quantity, 1.0);
+      expect(restored.items[0].price, 3500.0);
+      expect(restored.items[1].productId, 2);
+      expect(restored.items[1].name, '茶几');
+      expect(restored.items[1].quantity, 2.0);
+      expect(restored.items[1].price, 800.0);
+    });
+
+    test('toMap items field is valid JSON', () {
+      final map = sampleOrder.toMap();
+      final itemsStr = map['items'] as String;
+      expect(() => jsonDecode(itemsStr), isNot(throwsA(anything)));
     });
   });
 }

@@ -6,6 +6,7 @@ import '../../core/models/customer.dart';
 import '../../core/providers/order_provider.dart';
 import '../../core/providers/product_provider.dart';
 import '../../core/providers/customer_provider.dart';
+import '../../core/providers/settings_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../widgets/common/widgets.dart';
 import '../customers/customer_edit_page.dart';
@@ -323,10 +324,23 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
         await orderProvider.saveOrder(order);
       }
 
-      // 扣库存
+      // 扣库存（含负库存校验）
+      final settings = context.read<SettingsProvider>();
       for (final item in items) {
         if (item.productId != null) {
-          await productProvider.updateStock(item.productId!, -item.quantity.toInt());
+          if (!settings.negativeStock) {
+            final p = productProvider.products.firstWhere((p) => p.id == item.productId);
+            if (p.stock < item.quantity.toInt()) {
+              if (mounted) {
+                setState(() => _saving = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${item.name} 库存不足（剩余 ${p.stock}）')),
+                );
+              }
+              return;
+            }
+          }
+          await productProvider.updateStock(item.productId!, -item.quantity.toInt(), orderNo: orderNo);
         }
       }
 

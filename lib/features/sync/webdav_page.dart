@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:webdav_client/webdav_client.dart';
+import '../../core/database/database_helper.dart';
 import '../../core/providers/settings_provider.dart';
 
 class WebdavPage extends StatefulWidget {
@@ -46,10 +48,15 @@ class _WebdavPageState extends State<WebdavPage> {
   Future<void> _testConnection() async {
     setState(() => _testing = true);
     try {
-      // WebDAV connection test stub
-      await Future.delayed(const Duration(seconds: 1));
+      final s = context.read<SettingsProvider>();
+      final client = newClient(
+        s.webdavUrl,
+        user: s.webdavUser,
+        password: s.webdavPassword,
+      );
+      await client.ping();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('连接测试 - 请在真机上验证')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('连接成功')));
       }
     } catch (e) {
       if (mounted) {
@@ -62,9 +69,22 @@ class _WebdavPageState extends State<WebdavPage> {
   Future<void> _backup() async {
     setState(() => _backingUp = true);
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      final s = context.read<SettingsProvider>();
+      final client = newClient(
+        s.webdavUrl,
+        user: s.webdavUser,
+        password: s.webdavPassword,
+      );
+
+      final dbPath = await DatabaseHelper.instance.getDatabasePath();
+      final now = DateTime.now();
+      final fileName =
+          'furni_bill_backup_${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}.db';
+
+      await client.writeFromFile(dbPath, '/$fileName');
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('备份完成')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('备份完成: $fileName')));
       }
     } catch (e) {
       if (mounted) {
