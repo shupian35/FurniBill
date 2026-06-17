@@ -339,7 +339,7 @@ class _ReturnItemData {
   String name;
   String? spec;
   String? unit;
-  double quantity;
+  double quantity = 1;
   double price;
 
   _ReturnItemData({
@@ -347,7 +347,6 @@ class _ReturnItemData {
     required this.name,
     this.spec,
     this.unit,
-    this.quantity = 1,
     required this.price,
   });
 }

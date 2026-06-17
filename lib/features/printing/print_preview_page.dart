@@ -36,8 +36,6 @@ class PrintPreviewPage extends StatelessWidget {
     final pdf = pw.Document();
     final shopName = settings.shopName.isNotEmpty ? settings.shopName : '聪聪木业';
     final dateStr = DateFormat('yyyy-MM-dd').format(order.completeTime ?? order.createTime);
-    final totalQty = order.items.fold<int>(0, (s, i) => s + i.quantity.toInt());
-
     pdf.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(20),

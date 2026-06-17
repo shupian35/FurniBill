@@ -360,7 +360,7 @@ class _PurchaseItemData {
   String name;
   String? spec;
   String? unit;
-  double quantity;
+  double quantity = 1;
   double price;
 
   _PurchaseItemData({
@@ -368,7 +368,6 @@ class _PurchaseItemData {
     required this.name,
     this.spec,
     this.unit,
-    this.quantity = 1,
     required this.price,
   });
 }
