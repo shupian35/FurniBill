@@ -19,7 +19,7 @@ push main → 测试（analyze + test）→ 并行构建 → 发布 Release
 | 文件 | 说明 |
 |---|---|
 | `furni_bill.apk` | Android 调试安装包 |
-| `furni_bill.ipa` | iOS 模拟器构建（需 macOS + Xcode 运行） |
+| `furni_bill.ipa` | iOS 无签名包（需越狱或企业签名安装） |
 
 ---
 

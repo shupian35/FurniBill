@@ -109,13 +109,13 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build iOS (simulator)
-        run: flutter build ios --debug --simulator
+      - name: Build iOS (unsigned)
+        run: flutter build ios --debug --no-codesign
 
       - name: Package as IPA
         run: |
           mkdir -p build/ios/ipa/Payload
-          cp -r build/ios/iphonesimulator/Runner.app build/ios/ipa/Payload/
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
           cd build/ios/ipa
           zip -r ../../furni_bill.ipa Payload
           cd ../../..
@@ -204,7 +204,7 @@ jobs:
           echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
           echo "|---|---|" >> CHANGELOG_BODY.md
           echo "| \`furni_bill.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
-          echo "| \`furni_bill.ipa\` | iOS 模拟器构建（需 macOS + Xcode 运行） |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.ipa\` | iOS 无签名包（需越狱或企业签名安装） |" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
 

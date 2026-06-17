@@ -221,6 +221,13 @@ lib/
 2. **构建阶段**：并行构建 Android APK + iOS IPA
 3. **发布阶段**：自动创建 GitHub Release（pre-release）
 
+### 产物
+
+| 文件 | 说明 |
+|---|---|
+| `furni_bill.apk` | Android 调试安装包 |
+| `furni_bill.ipa` | iOS 无签名包（需越狱或企业签名安装） |
+
 产物可直接在 [Releases](https://github.com/shupian35/FurniBill/releases) 页面下载。
 
 ## License

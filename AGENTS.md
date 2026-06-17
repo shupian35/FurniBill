@@ -78,7 +78,7 @@ GitHub Actions 工作流：`.github/workflows/build-and-release.yml`喵~
 
 Tag 格式：`v{版本}-beta.{日期}.{运行号}`（如 `v1.0.0-beta.20260617.1`）喵~
 
-产物：`furni_bill.apk`（Android）、`furni_bill.ipa`（iOS 模拟器）喵~
+产物：`furni_bill.apk`（Android）、`furni_bill.ipa`（iOS 无签名包）喵~
 
 ## 功能模块
 
