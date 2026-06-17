@@ -19,7 +19,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 4,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -34,6 +34,12 @@ class DatabaseHelper {
         unit TEXT,
         price REAL NOT NULL,
         stock INTEGER DEFAULT 0,
+        cost_price REAL DEFAULT 0,
+        min_stock INTEGER DEFAULT 0,
+        category_id INTEGER,
+        image_url TEXT,
+        barcode TEXT,
+        warehouse_id INTEGER DEFAULT 1,
         create_time TEXT NOT NULL,
         update_time TEXT NOT NULL
       )
@@ -45,6 +51,10 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         phone TEXT NOT NULL,
         address TEXT,
+        tier TEXT DEFAULT '普通',
+        credit_limit REAL DEFAULT 0,
+        due_days INTEGER DEFAULT 0,
+        total_owing REAL DEFAULT 0,
         create_time TEXT NOT NULL,
         update_time TEXT NOT NULL
       )
@@ -122,54 +132,247 @@ class DatabaseHelper {
         create_time TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        parent_id INTEGER,
+        sort_order INTEGER DEFAULT 0,
+        create_time TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE warehouses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        address TEXT,
+        phone TEXT,
+        is_default INTEGER DEFAULT 0,
+        create_time TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE purchase_orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_no TEXT NOT NULL UNIQUE,
+        supplier_name TEXT,
+        supplier_phone TEXT,
+        warehouse_id INTEGER DEFAULT 1,
+        items TEXT,
+        total_amount REAL DEFAULT 0,
+        paid_amount REAL DEFAULT 0,
+        owing_amount REAL DEFAULT 0,
+        status TEXT DEFAULT 'draft',
+        remark TEXT,
+        create_time TEXT NOT NULL,
+        complete_time TEXT,
+        FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE return_orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_no TEXT NOT NULL UNIQUE,
+        type TEXT NOT NULL,
+        original_order_id INTEGER,
+        customer_id INTEGER,
+        supplier_name TEXT,
+        items TEXT,
+        total_amount REAL DEFAULT 0,
+        status TEXT DEFAULT 'pending',
+        reason TEXT,
+        remark TEXT,
+        create_time TEXT NOT NULL,
+        complete_time TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE inventory_checks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        check_no TEXT NOT NULL UNIQUE,
+        warehouse_id INTEGER DEFAULT 1,
+        status TEXT DEFAULT 'draft',
+        remark TEXT,
+        create_time TEXT NOT NULL,
+        complete_time TEXT,
+        FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE inventory_check_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        check_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        system_stock INTEGER NOT NULL,
+        actual_stock INTEGER,
+        difference INTEGER,
+        remark TEXT,
+        FOREIGN KEY (check_id) REFERENCES inventory_checks(id),
+        FOREIGN KEY (product_id) REFERENCES products(id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE customer_prices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        price REAL NOT NULL,
+        create_time TEXT NOT NULL,
+        FOREIGN KEY (customer_id) REFERENCES customers(id),
+        FOREIGN KEY (product_id) REFERENCES products(id),
+        UNIQUE(customer_id, product_id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE members (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER,
+        member_no TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        phone TEXT,
+        points INTEGER DEFAULT 0,
+        level TEXT DEFAULT '普通会员',
+        create_time TEXT NOT NULL,
+        FOREIGN KEY (customer_id) REFERENCES customers(id)
+      )
+    ''');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await db.execute("ALTER TABLE products ADD COLUMN spec TEXT");
-      await db.execute("ALTER TABLE products ADD COLUMN unit TEXT DEFAULT '件'");
+    if (oldVersion < 5) {
+      await db.execute("ALTER TABLE products ADD COLUMN cost_price REAL DEFAULT 0");
+      await db.execute("ALTER TABLE products ADD COLUMN min_stock INTEGER DEFAULT 0");
+      await db.execute("ALTER TABLE products ADD COLUMN category_id INTEGER");
+      await db.execute("ALTER TABLE products ADD COLUMN image_url TEXT");
+      await db.execute("ALTER TABLE products ADD COLUMN barcode TEXT");
     }
-    if (oldVersion < 3) {
+    if (oldVersion < 6) {
       await db.execute('''
-        CREATE TABLE customers_new (
+        CREATE TABLE warehouses (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
-          phone TEXT NOT NULL,
           address TEXT,
-          create_time TEXT NOT NULL,
-          update_time TEXT NOT NULL
+          phone TEXT,
+          is_default INTEGER DEFAULT 0,
+          create_time TEXT NOT NULL
         )
       ''');
-      await db.execute(
-        'INSERT INTO customers_new (id, name, phone, address, create_time, update_time) '
-        'SELECT id, name, phone, address, create_time, update_time FROM customers'
-      );
-      await db.execute('DROP TABLE customers');
-      await db.execute('ALTER TABLE customers_new RENAME TO customers');
+      await db.execute("ALTER TABLE products ADD COLUMN warehouse_id INTEGER DEFAULT 1");
+      await db.execute("ALTER TABLE customers ADD COLUMN tier TEXT DEFAULT '普通'");
+      await db.execute("ALTER TABLE customers ADD COLUMN credit_limit REAL DEFAULT 0");
+      await db.execute("ALTER TABLE customers ADD COLUMN due_days INTEGER DEFAULT 0");
+      await db.execute("ALTER TABLE customers ADD COLUMN total_owing REAL DEFAULT 0");
+      await db.insert('warehouses', {
+        'name': '默认仓库',
+        'is_default': 1,
+        'create_time': DateTime.now().toIso8601String(),
+      });
     }
-    if (oldVersion < 4) {
-      // Drop old tables that are no longer used
-      await db.execute('DROP TABLE IF EXISTS categories');
-      await db.execute('DROP TABLE IF EXISTS skus');
-      // Recreate products with simplified schema
+    if (oldVersion < 7) {
       await db.execute('''
-        CREATE TABLE products_new (
+        CREATE TABLE purchase_orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_no TEXT NOT NULL UNIQUE,
+          supplier_name TEXT,
+          supplier_phone TEXT,
+          warehouse_id INTEGER DEFAULT 1,
+          items TEXT,
+          total_amount REAL DEFAULT 0,
+          paid_amount REAL DEFAULT 0,
+          owing_amount REAL DEFAULT 0,
+          status TEXT DEFAULT 'draft',
+          remark TEXT,
+          create_time TEXT NOT NULL,
+          complete_time TEXT,
+          FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE return_orders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          order_no TEXT NOT NULL UNIQUE,
+          type TEXT NOT NULL,
+          original_order_id INTEGER,
+          customer_id INTEGER,
+          supplier_name TEXT,
+          items TEXT,
+          total_amount REAL DEFAULT 0,
+          status TEXT DEFAULT 'pending',
+          reason TEXT,
+          remark TEXT,
+          create_time TEXT NOT NULL,
+          complete_time TEXT
+        )
+      ''');
+    }
+    if (oldVersion < 8) {
+      await db.execute('''
+        CREATE TABLE categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
-          spec TEXT,
-          unit TEXT,
-          price REAL NOT NULL,
-          stock INTEGER DEFAULT 0,
-          create_time TEXT NOT NULL,
-          update_time TEXT NOT NULL
+          parent_id INTEGER,
+          sort_order INTEGER DEFAULT 0,
+          create_time TEXT NOT NULL
         )
       ''');
-      await db.execute(
-        'INSERT INTO products_new (id, name, spec, unit, price, stock, create_time, update_time) '
-        'SELECT id, name, spec, unit, wholesale_price, stock, create_time, update_time FROM products'
-      );
-      await db.execute('DROP TABLE products');
-      await db.execute('ALTER TABLE products_new RENAME TO products');
+      await db.execute('''
+        CREATE TABLE inventory_checks (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          check_no TEXT NOT NULL UNIQUE,
+          warehouse_id INTEGER DEFAULT 1,
+          status TEXT DEFAULT 'draft',
+          remark TEXT,
+          create_time TEXT NOT NULL,
+          complete_time TEXT,
+          FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE inventory_check_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          check_id INTEGER NOT NULL,
+          product_id INTEGER NOT NULL,
+          system_stock INTEGER NOT NULL,
+          actual_stock INTEGER,
+          difference INTEGER,
+          remark TEXT,
+          FOREIGN KEY (check_id) REFERENCES inventory_checks(id),
+          FOREIGN KEY (product_id) REFERENCES products(id)
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE customer_prices (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          customer_id INTEGER NOT NULL,
+          product_id INTEGER NOT NULL,
+          price REAL NOT NULL,
+          create_time TEXT NOT NULL,
+          FOREIGN KEY (customer_id) REFERENCES customers(id),
+          FOREIGN KEY (product_id) REFERENCES products(id),
+          UNIQUE(customer_id, product_id)
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE members (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          customer_id INTEGER,
+          member_no TEXT NOT NULL UNIQUE,
+          name TEXT NOT NULL,
+          phone TEXT,
+          points INTEGER DEFAULT 0,
+          level TEXT DEFAULT '普通会员',
+          create_time TEXT NOT NULL,
+          FOREIGN KEY (customer_id) REFERENCES customers(id)
+        )
+      ''');
     }
   }
 
