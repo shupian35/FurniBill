@@ -133,7 +133,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   decoration: const InputDecoration(labelText: '分类', border: OutlineInputBorder()),
                   items: [
                     const DropdownMenuItem<int>(value: null, child: Text('无分类')),
-                    ...catProv.categories.map((c) => DropdownMenuItem<int>(value: c.id, child: Text(c.name))),
+                    ...catProv.categories.map<DropdownMenuItem<int>>((c) => DropdownMenuItem<int>(value: c.id, child: Text(c.name))),
                   ],
                   onChanged: (v) => setState(() => _categoryId = v),
                 );

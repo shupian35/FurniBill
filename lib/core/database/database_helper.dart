@@ -444,6 +444,11 @@ class DatabaseHelper {
     await db.rawInsert(sql, args);
   }
 
+  Future<int> rawUpdate(String sql, [List<dynamic>? args]) async {
+    final db = await database;
+    return db.rawUpdate(sql, args);
+  }
+
   Future<String> getDatabasePath() async {
     final dbPath = await getDatabasesPath();
     return join(dbPath, 'furni_bill.db');
