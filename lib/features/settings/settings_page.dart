@@ -4,6 +4,8 @@ import '../../core/providers/settings_provider.dart';
 import 'shop_info_page.dart';
 import 'print_settings_page.dart';
 import '../sync/webdav_page.dart';
+import 'warehouse_list_page.dart';
+import 'print_template_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -60,6 +62,35 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('收款语音播报'),
                 value: settings.voiceAnnounce,
                 onChanged: settings.setVoiceAnnounce,
+              ),
+              const Divider(),
+              // 仓库管理
+              ListTile(
+                leading: const Icon(Icons.warehouse),
+                title: const Text('仓库管理'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WarehouseListPage())),
+              ),
+              const Divider(),
+              // 打印模板
+              ListTile(
+                leading: const Icon(Icons.description),
+                title: const Text('打印模板'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrintTemplatePage())),
+              ),
+              const Divider(),
+              // 员工管理
+              ListTile(
+                leading: const Icon(Icons.people),
+                title: const Text('员工管理'),
+                subtitle: const Text('功能开发中'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('员工管理功能即将上线')),
+                  );
+                },
               ),
               const Divider(),
               // WebDAV

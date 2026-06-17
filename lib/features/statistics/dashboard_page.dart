@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../core/providers/order_provider.dart';
+import '../../core/providers/product_provider.dart';
 import '../../widgets/common/widgets.dart';
 import '../orders/order_create_page.dart';
 import '../orders/draft_list_page.dart';
 import '../statistics/statistics_page.dart';
+import '../statistics/inventory_alert_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -19,6 +21,8 @@ class _DashboardPageState extends State<DashboardPage> {
   List<Map<String, dynamic>> _weeklySales = [];
   bool _loading = true;
 
+  int _lowStockCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -31,9 +35,14 @@ class _DashboardPageState extends State<DashboardPage> {
       orderProvider.getTodayStats(),
       orderProvider.getSalesTrend('week'),
     ]);
+    final productProvider = context.read<ProductProvider>();
+    final lowStock = productProvider.products
+        .where((p) => p.minStock > 0 && p.stock <= p.minStock)
+        .length;
     setState(() {
       _todayStats = results[0] as Map<String, double>;
       _weeklySales = results[1] as List<Map<String, dynamic>>;
+      _lowStockCount = lowStock;
       _loading = false;
     });
   }
@@ -94,6 +103,37 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(width: 12),
               Expanded(child: _StatCard(label: '新增欠款', value: '¥${(_todayStats['total_owing'] ?? 0).toStringAsFixed(0)}', icon: Icons.money_off, color: Colors.red)),
             ]),
+            const SizedBox(height: 16),
+            // 库存预警
+            Card(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const InventoryAlertPage()));
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(children: [
+                    Badge(
+                      isLabelVisible: _lowStockCount > 0,
+                      label: Text('$_lowStockCount'),
+                      backgroundColor: Colors.orange,
+                      child: const Icon(Icons.warning_amber_rounded, size: 28, color: Colors.orange),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('库存预警', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text(
+                        _lowStockCount > 0 ? '$_lowStockCount 个商品库存不足' : '库存充足，暂无预警',
+                        style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 13),
+                      ),
+                    ])),
+                    const Icon(Icons.chevron_right),
+                  ]),
+                ),
+              ),
+            ),
             const SizedBox(height: 16),
             // 周销售趋势
             if (_weeklySales.isNotEmpty) ...[

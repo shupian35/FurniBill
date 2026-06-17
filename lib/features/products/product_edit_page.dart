@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/product.dart';
+import '../../core/providers/category_provider.dart';
 import '../../core/providers/product_provider.dart';
 
 class ProductEditPage extends StatefulWidget {
@@ -18,6 +21,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
   final _unitCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   final _stockCtrl = TextEditingController();
+  final _costPriceCtrl = TextEditingController();
+  final _minStockCtrl = TextEditingController();
+  final _barcodeCtrl = TextEditingController();
+  int? _categoryId;
+  File? _imageFile;
   bool _saving = false;
 
   bool get isEdit => widget.product != null;
@@ -32,7 +40,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
       _unitCtrl.text = p.unit ?? '';
       _priceCtrl.text = p.price.toString();
       _stockCtrl.text = p.stock.toString();
+      _costPriceCtrl.text = p.costPrice.toString();
+      _minStockCtrl.text = p.minStock.toString();
+      _barcodeCtrl.text = p.barcode ?? '';
+      _categoryId = p.categoryId;
     }
+    context.read<CategoryProvider>().init();
   }
 
   @override
@@ -42,6 +55,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
     _unitCtrl.dispose();
     _priceCtrl.dispose();
     _stockCtrl.dispose();
+    _costPriceCtrl.dispose();
+    _minStockCtrl.dispose();
+    _barcodeCtrl.dispose();
     super.dispose();
   }
 
@@ -55,7 +71,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
       spec: _specCtrl.text.trim().isEmpty ? null : _specCtrl.text.trim(),
       unit: _unitCtrl.text.trim().isEmpty ? null : _unitCtrl.text.trim(),
       price: double.tryParse(_priceCtrl.text) ?? 0,
+      costPrice: double.tryParse(_costPriceCtrl.text) ?? 0,
       stock: int.tryParse(_stockCtrl.text) ?? 0,
+      minStock: int.tryParse(_minStockCtrl.text) ?? 0,
+      categoryId: _categoryId,
+      barcode: _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
     );
     if (isEdit) {
       await provider.updateProduct(product);
@@ -63,6 +83,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
       await provider.addProduct(product);
     }
     if (mounted) Navigator.pop(context, true);
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512);
+    if (picked != null) {
+      setState(() => _imageFile = File(picked.path));
+    }
   }
 
   @override
@@ -91,6 +119,44 @@ class _ProductEditPageState extends State<ProductEditPage> {
               const SizedBox(width: 12),
               Expanded(child: TextFormField(controller: _stockCtrl, decoration: const InputDecoration(labelText: '库存数量', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
             ]),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: TextFormField(controller: _costPriceCtrl, decoration: const InputDecoration(labelText: '成本价', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
+              const SizedBox(width: 12),
+              Expanded(child: TextFormField(controller: _minStockCtrl, decoration: const InputDecoration(labelText: '最低库存', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
+            ]),
+            const SizedBox(height: 12),
+            Consumer<CategoryProvider>(
+              builder: (context, catProv, _) {
+                return DropdownButtonFormField<int>(
+                  initialValue: _categoryId,
+                  decoration: const InputDecoration(labelText: '分类', border: OutlineInputBorder()),
+                  items: [
+                    const DropdownMenuItem<int>(value: null, child: Text('无分类')),
+                    ...catProv.categories.map((c) => DropdownMenuItem<int>(value: c.id, child: Text(c.name))),
+                  ],
+                  onChanged: (v) => setState(() => _categoryId = v),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(controller: _barcodeCtrl, decoration: const InputDecoration(labelText: '条码', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (_imageFile != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(_imageFile!, width: 64, height: 64, fit: BoxFit.cover),
+                  ),
+                if (_imageFile != null) const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: _pickImage,
+                  icon: const Icon(Icons.image),
+                  label: Text(_imageFile != null ? '更换图片' : '选择图片'),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
             FilledButton(onPressed: _saving ? null : _save, child: Text(_saving ? '保存中...' : '保存')),
             const SizedBox(height: 32),

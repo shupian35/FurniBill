@@ -16,6 +16,9 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
+  final _creditLimitCtrl = TextEditingController();
+  final _dueDaysCtrl = TextEditingController();
+  String _tier = '普通';
   bool _saving = false;
 
   bool get isEdit => widget.customer != null;
@@ -28,6 +31,9 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
       _nameCtrl.text = c.name;
       _phoneCtrl.text = c.phone;
       _addressCtrl.text = c.address ?? '';
+      _tier = c.tier;
+      _creditLimitCtrl.text = c.creditLimit.toString();
+      _dueDaysCtrl.text = c.dueDays.toString();
     }
   }
 
@@ -36,6 +42,8 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
     _nameCtrl.dispose();
     _phoneCtrl.dispose();
     _addressCtrl.dispose();
+    _creditLimitCtrl.dispose();
+    _dueDaysCtrl.dispose();
     super.dispose();
   }
 
@@ -48,6 +56,9 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
       name: _nameCtrl.text.trim(),
       phone: _phoneCtrl.text.trim(),
       address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      tier: _tier,
+      creditLimit: double.tryParse(_creditLimitCtrl.text) ?? 0,
+      dueDays: int.tryParse(_dueDaysCtrl.text) ?? 0,
     );
     try {
       int? savedId = customer.id;
@@ -97,6 +108,24 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
               decoration: const InputDecoration(labelText: '地址', border: OutlineInputBorder()),
               maxLines: 2,
             ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _tier,
+              decoration: const InputDecoration(labelText: '客户等级', border: OutlineInputBorder()),
+              items: const [
+                DropdownMenuItem(value: '普通', child: Text('普通')),
+                DropdownMenuItem(value: 'VIP', child: Text('VIP')),
+                DropdownMenuItem(value: '代理', child: Text('代理')),
+                DropdownMenuItem(value: '批发商', child: Text('批发商')),
+              ],
+              onChanged: (v) => setState(() => _tier = v ?? '普通'),
+            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: TextFormField(controller: _creditLimitCtrl, decoration: const InputDecoration(labelText: '信用额度', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
+              const SizedBox(width: 12),
+              Expanded(child: TextFormField(controller: _dueDaysCtrl, decoration: const InputDecoration(labelText: '账期天数', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
+            ]),
             const SizedBox(height: 24),
             FilledButton(onPressed: _saving ? null : _save, child: Text(_saving ? '保存中...' : '保存')),
             const SizedBox(height: 32),

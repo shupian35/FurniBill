@@ -19,6 +19,7 @@ class SettingsProvider extends ChangeNotifier {
   String _webdavPassword = '';
   bool _autoBackup = false;
   String _backupFrequency = 'daily'; // daily, weekly
+  String _printTemplate = 'default';
 
   bool get darkMode => _darkMode;
   bool get negativeStock => _negativeStock;
@@ -35,6 +36,7 @@ class SettingsProvider extends ChangeNotifier {
   String get webdavPassword => _webdavPassword;
   bool get autoBackup => _autoBackup;
   String get backupFrequency => _backupFrequency;
+  String get printTemplate => _printTemplate;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -53,6 +55,7 @@ class SettingsProvider extends ChangeNotifier {
     _webdavPassword = prefs.getString('webdav_password') ?? '';
     _autoBackup = prefs.getBool('auto_backup') ?? false;
     _backupFrequency = prefs.getString('backup_frequency') ?? 'daily';
+    _printTemplate = prefs.getString('print_template') ?? 'default';
     notifyListeners();
   }
 
@@ -82,4 +85,5 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setWebdavPassword(String v) async { _webdavPassword = v; await _save('webdav_password', v); notifyListeners(); }
   Future<void> setAutoBackup(bool v) async { _autoBackup = v; await _save('auto_backup', v); notifyListeners(); }
   Future<void> setBackupFrequency(String v) async { _backupFrequency = v; await _save('backup_frequency', v); notifyListeners(); }
+  Future<void> setPrintTemplate(String v) async { _printTemplate = v; await _save('print_template', v); notifyListeners(); }
 }
