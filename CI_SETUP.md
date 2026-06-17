@@ -1,7 +1,16 @@
 # CI/CD 构建指南
 
-GitHub Actions 在每次推送 `main` 分支时自动构建 Android APK 和 iOS IPA（Debug），
-构建完成后自动发布为 GitHub Release。
+GitHub Actions 在每次推送 `main` 分支时自动运行：测试 → 构建 → 发布。
+
+---
+
+## 流程
+
+```
+push main → 测试（analyze + test）→ 并行构建 → 发布 Release
+                              ↓           ↓
+                        Android APK   iOS IPA
+```
 
 ---
 
@@ -9,8 +18,8 @@ GitHub Actions 在每次推送 `main` 分支时自动构建 Android APK 和 iOS 
 
 | 文件 | 说明 |
 |---|---|
-| `app-debug.apk` | Android 调试安装包 |
-| `furni_bill-ios-simulator.zip` | iOS 模拟器构建（需 macOS + Xcode 运行） |
+| `furni_bill.apk` | Android 调试安装包 |
+| `furni_bill.ipa` | iOS 模拟器构建（需 macOS + Xcode 运行） |
 
 ---
 
@@ -18,9 +27,10 @@ GitHub Actions 在每次推送 `main` 分支时自动构建 Android APK 和 iOS 
 
 每次 push `main` 分支后：
 
-1. GitHub Actions 自动并行构建 Android + iOS
-2. 构建成功后自动创建 GitHub Release（标记为 pre-release）
-3. Release 命名格式：`v20260509-build1`（日期 + 运行编号）
+1. 运行 `flutter analyze` 和 `flutter test`
+2. 并行构建 Android APK + iOS IPA
+3. 自动创建 GitHub Release（标记为 pre-release）
+4. Release 命名格式：`v{版本}-beta.{日期}.{运行号}`
 
 在仓库的 **Releases** 页面即可下载。
 
@@ -35,7 +45,7 @@ Actions → Build & Release → Run workflow → Run workflow
 ## 安装说明
 
 ### Android
-直接安装 `app-debug.apk`，需允许「未知来源」安装。
+直接安装 `furni_bill.apk`，需允许「未知来源」安装。
 
 ### iOS
 模拟器构建解压后拖入 Xcode 的 Simulator 即可运行。
