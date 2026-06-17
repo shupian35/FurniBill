@@ -47,11 +47,14 @@ jobs:
       - name: Build Debug APK
         run: flutter build apk --debug
 
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/furni_bill.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: furni_bill-apk
+          path: build/app/outputs/flutter-apk/furni_bill.apk
           retention-days: 30
 
   # ============================================================
@@ -140,7 +143,7 @@ jobs:
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
-          name: app-debug-apk
+          name: furni_bill-apk
 
       - name: Download IPA
         uses: actions/download-artifact@v4
@@ -167,7 +170,7 @@ jobs:
           echo "### 产物说明" >> CHANGELOG_BODY.md
           echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
           echo "|---|---|" >> CHANGELOG_BODY.md
-          echo "| \`app-debug.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
           echo "| \`furni_bill.ipa\` | iOS 无签名 IPA（需越狱或企业签名安装） |" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
@@ -201,7 +204,7 @@ jobs:
           name: "${{ steps.check_tag.outputs.tag || steps.tag.outputs.tag }} (Pre-release)"
           body_path: CHANGELOG_BODY.md
           files: |
-            app-debug.apk
+            furni_bill.apk
             furni_bill.ipa
           draft: false
           prerelease: true
