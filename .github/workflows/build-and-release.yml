@@ -17,10 +17,39 @@ env:
 
 jobs:
   # ============================================================
+  # Test
+  # ============================================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.2'
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+  # ============================================================
   # Android Debug APK
   # ============================================================
   build-android:
     name: Android APK
+    needs: [test]
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -62,6 +91,7 @@ jobs:
   # ============================================================
   build-ios:
     name: iOS IPA
+    needs: [test]
     runs-on: macos-latest
     timeout-minutes: 30
 
@@ -79,13 +109,13 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build iOS (unsigned)
-        run: flutter build ios --debug --no-codesign
+      - name: Build iOS (simulator)
+        run: flutter build ios --debug --simulator
 
       - name: Package as IPA
         run: |
           mkdir -p build/ios/ipa/Payload
-          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cp -r build/ios/iphonesimulator/Runner.app build/ios/ipa/Payload/
           cd build/ios/ipa
           zip -r ../../furni_bill.ipa Payload
           cd ../../..
@@ -93,7 +123,7 @@ jobs:
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-ipa
+          name: furni_bill-ipa
           path: build/furni_bill.ipa
           retention-days: 30
 
@@ -109,6 +139,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Read version from pubspec.yaml
         id: version
@@ -121,7 +153,7 @@ jobs:
         id: tag
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          DATE=$(date +'%Y%m%d')
+          DATE=$(date +'%Y%m%d')"
           TAG="v${VERSION}-beta.${DATE}.${GITHUB_RUN_NUMBER}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Release tag: $TAG"
@@ -138,6 +170,7 @@ jobs:
             echo "New tag: $NEW_TAG"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
           fi
 
       - name: Download APK
@@ -148,7 +181,7 @@ jobs:
       - name: Download IPA
         uses: actions/download-artifact@v4
         with:
-          name: app-debug-ipa
+          name: furni_bill-ipa
 
       - name: Generate changelog from commits
         id: changelog
@@ -171,7 +204,7 @@ jobs:
           echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
           echo "|---|---|" >> CHANGELOG_BODY.md
           echo "| \`furni_bill.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
-          echo "| \`furni_bill.ipa\` | iOS 无签名 IPA（需越狱或企业签名安装） |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.ipa\` | iOS 模拟器构建（需 macOS + Xcode 运行） |" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
 
@@ -180,7 +213,7 @@ jobs:
         continue-on-error: true
         with:
           script: |
-            const tag = '${{ steps.check_tag.outputs.tag || steps.tag.outputs.tag }}';
+            const tag = '${{ steps.check_tag.outputs.tag }}';
             try {
               const release = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
@@ -200,8 +233,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.check_tag.outputs.tag || steps.tag.outputs.tag }}
-          name: "${{ steps.check_tag.outputs.tag || steps.tag.outputs.tag }} (Pre-release)"
+          tag_name: ${{ steps.check_tag.outputs.tag }}
+          name: "${{ steps.check_tag.outputs.tag }} (Pre-release)"
           body_path: CHANGELOG_BODY.md
           files: |
             furni_bill.apk
