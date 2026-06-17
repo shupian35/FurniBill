@@ -55,10 +55,10 @@ jobs:
           retention-days: 30
 
   # ============================================================
-  # iOS Debug (unsigned)
+  # iOS Debug (unsigned IPA)
   # ============================================================
   build-ios:
-    name: iOS App
+    name: iOS IPA
     runs-on: macos-latest
     timeout-minutes: 30
 
@@ -76,22 +76,22 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build iOS Debug (simulator)
-        run: flutter build ios --debug --simulator
+      - name: Build iOS (unsigned)
+        run: flutter build ios --debug --no-codesign
 
-      - name: Package iOS app
+      - name: Package as IPA
         run: |
-          mkdir -p build/ios/simulator
-          cp -r build/ios/iphonesimulator/Runner.app build/ios/simulator/
-          cd build/ios/simulator
-          zip -r ../../furni_bill-ios-simulator.zip Runner.app
+          mkdir -p build/ios/ipa/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cd build/ios/ipa
+          zip -r ../../furni_bill.ipa Payload
           cd ../../..
 
-      - name: Upload iOS
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-ios
-          path: build/furni_bill-ios-simulator.zip
+          name: app-debug-ipa
+          path: build/furni_bill.ipa
           retention-days: 30
 
   # ============================================================
@@ -142,10 +142,10 @@ jobs:
         with:
           name: app-debug-apk
 
-      - name: Download iOS
+      - name: Download IPA
         uses: actions/download-artifact@v4
         with:
-          name: app-debug-ios
+          name: app-debug-ipa
 
       - name: Generate changelog from commits
         id: changelog
@@ -168,7 +168,7 @@ jobs:
           echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
           echo "|---|---|" >> CHANGELOG_BODY.md
           echo "| \`app-debug.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
-          echo "| \`furni_bill-ios-simulator.zip\` | iOS 模拟器构建（需 macOS + Xcode 运行） |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.ipa\` | iOS 无签名 IPA（需越狱或企业签名安装） |" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
 
@@ -202,7 +202,7 @@ jobs:
           body_path: CHANGELOG_BODY.md
           files: |
             app-debug.apk
-            furni_bill-ios-simulator.zip
+            furni_bill.ipa
           draft: false
           prerelease: true
         env:
