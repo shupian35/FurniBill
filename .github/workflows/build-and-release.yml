@@ -146,31 +146,31 @@ jobs:
         id: version
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "App version: $VERSION"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "App version: ${VERSION}"
 
       - name: Generate release tag
         id: tag
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          DATE=$(date +'%Y%m%d')"
+          DATE=$(date +'%Y%m%d')
           TAG="v${VERSION}-beta.${DATE}.${GITHUB_RUN_NUMBER}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Release tag: $TAG"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Release tag: ${TAG}"
 
       - name: Check if tag already exists
         id: check_tag
         run: |
           TAG="${{ steps.tag.outputs.tag }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Tag $TAG already exists, will append run number"
             NEW_TAG="${TAG}.retry${GITHUB_RUN_NUMBER}"
-            echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
-            echo "New tag: $NEW_TAG"
+            echo "tag=${NEW_TAG}" >> "$GITHUB_OUTPUT"
+            echo "New tag: ${NEW_TAG}"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Download APK
