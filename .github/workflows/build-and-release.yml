@@ -6,6 +6,7 @@ on:
     paths-ignore:
       - '**.md'
       - 'LICENSE'
+      - '.gitignore'
   workflow_dispatch:
 
 permissions:
@@ -94,7 +95,7 @@ jobs:
           retention-days: 30
 
   # ============================================================
-  # Create GitHub Release
+  # Create GitHub Release (Pre-release)
   # ============================================================
   release:
     name: Publish Release
@@ -103,6 +104,39 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "App version: $VERSION"
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE=$(date +'%Y%m%d')
+          TAG="v${VERSION}-beta.${DATE}.${GITHUB_RUN_NUMBER}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Release tag: $TAG"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists, will append run number"
+            NEW_TAG="${TAG}.retry${GITHUB_RUN_NUMBER}"
+            echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+            echo "New tag: $NEW_TAG"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
@@ -113,29 +147,59 @@ jobs:
         with:
           name: app-debug-ios
 
-      - name: Generate release tag
-        id: tag
+      - name: Generate changelog from commits
+        id: changelog
         run: |
-          TAG="v$(date +'%Y%m%d')-build${GITHUB_RUN_NUMBER}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "$TAG"
+          echo "## 更新内容" > CHANGELOG_BODY.md
+          echo "" >> CHANGELOG_BODY.md
+          git log --oneline -10 --pretty=format:"- %s" >> CHANGELOG_BODY.md
+          echo "" >> CHANGELOG_BODY.md
+          echo "" >> CHANGELOG_BODY.md
+          echo "---" >> CHANGELOG_BODY.md
+          echo "" >> CHANGELOG_BODY.md
+          echo "### 构建信息" >> CHANGELOG_BODY.md
+          echo "- **版本**: ${{ steps.version.outputs.version }}" >> CHANGELOG_BODY.md
+          echo "- **提交**: \`${{ github.sha }}\`" >> CHANGELOG_BODY.md
+          echo "- **分支**: ${{ github.ref_name }}" >> CHANGELOG_BODY.md
+          echo "- **运行编号**: #${{ github.run_number }}" >> CHANGELOG_BODY.md
+          echo "- **构建时间**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG_BODY.md
+          echo "" >> CHANGELOG_BODY.md
+          echo "### 产物说明" >> CHANGELOG_BODY.md
+          echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
+          echo "|---|---|" >> CHANGELOG_BODY.md
+          echo "| \`app-debug.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill-ios-simulator.zip\` | iOS 模拟器构建（需 macOS + Xcode 运行） |" >> CHANGELOG_BODY.md
+          echo "" >> CHANGELOG_BODY.md
+          echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
 
-      - name: Create Release
+      - name: Delete existing release with same tag (if any)
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const tag = '${{ steps.check_tag.outputs.tag || steps.tag.outputs.tag }}';
+            try {
+              const release = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: tag
+              });
+              await github.rest.repos.deleteRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.data.id
+              });
+              console.log(`Deleted existing release for tag ${tag}`);
+            } catch (e) {
+              console.log(`No existing release found for tag ${tag}`);
+            }
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: ${{ steps.tag.outputs.tag }}
-          body: |
-            ### 构建信息
-            - **提交**: ${{ github.sha }}
-            - **分支**: ${{ github.ref_name }}
-            - **运行编号**: #${{ github.run_number }}
-
-            ### 产物
-            | 文件 | 说明 |
-            |---|---|
-            | `app-debug.apk` | Android 调试安装包 |
-            | `furni_bill-ios-simulator.zip` | iOS 模拟器构建（需 macOS + Xcode 运行） |
+          tag_name: ${{ steps.check_tag.outputs.tag || steps.tag.outputs.tag }}
+          name: "${{ steps.check_tag.outputs.tag || steps.tag.outputs.tag }} (Pre-release)"
+          body_path: CHANGELOG_BODY.md
           files: |
             app-debug.apk
             furni_bill-ios-simulator.zip
