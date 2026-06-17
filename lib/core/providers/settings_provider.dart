@@ -21,6 +21,11 @@ class SettingsProvider extends ChangeNotifier {
   String _backupFrequency = 'daily'; // daily, weekly
   String _printTemplate = 'default';
 
+  // 三联单设置
+  bool _tripleFormEnabled = true;
+  List<int> _tripleFormCopies = [0, 1, 2]; // 默认全部打印
+  String _tripleFormMode = 'continuous'; // continuous, separate
+
   bool get darkMode => _darkMode;
   bool get negativeStock => _negativeStock;
   int get decimalPlaces => _decimalPlaces;
@@ -37,6 +42,9 @@ class SettingsProvider extends ChangeNotifier {
   bool get autoBackup => _autoBackup;
   String get backupFrequency => _backupFrequency;
   String get printTemplate => _printTemplate;
+  bool get tripleFormEnabled => _tripleFormEnabled;
+  List<int> get tripleFormCopies => _tripleFormCopies;
+  String get tripleFormMode => _tripleFormMode;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,6 +64,9 @@ class SettingsProvider extends ChangeNotifier {
     _autoBackup = prefs.getBool('auto_backup') ?? false;
     _backupFrequency = prefs.getString('backup_frequency') ?? 'daily';
     _printTemplate = prefs.getString('print_template') ?? 'default';
+    _tripleFormEnabled = prefs.getBool('triple_form_enabled') ?? true;
+    _tripleFormCopies = (prefs.getStringList('triple_form_copies') ?? ['0', '1', '2']).map(int.parse).toList();
+    _tripleFormMode = prefs.getString('triple_form_mode') ?? 'continuous';
     notifyListeners();
   }
 
@@ -68,6 +79,11 @@ class SettingsProvider extends ChangeNotifier {
     } else if (value is String) {
       await prefs.setString(key, value);
     }
+  }
+
+  Future<void> _saveStringList(String key, List<String> value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(key, value);
   }
 
   Future<void> setDarkMode(bool v) async { _darkMode = v; await _save('dark_mode', v); notifyListeners(); }
@@ -86,4 +102,7 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setAutoBackup(bool v) async { _autoBackup = v; await _save('auto_backup', v); notifyListeners(); }
   Future<void> setBackupFrequency(String v) async { _backupFrequency = v; await _save('backup_frequency', v); notifyListeners(); }
   Future<void> setPrintTemplate(String v) async { _printTemplate = v; await _save('print_template', v); notifyListeners(); }
+  Future<void> setTripleFormEnabled(bool v) async { _tripleFormEnabled = v; await _save('triple_form_enabled', v); notifyListeners(); }
+  Future<void> setTripleFormCopies(List<int> v) async { _tripleFormCopies = v; await _saveStringList('triple_form_copies', v.map((e) => e.toString()).toList()); notifyListeners(); }
+  Future<void> setTripleFormMode(String v) async { _tripleFormMode = v; await _save('triple_form_mode', v); notifyListeners(); }
 }

@@ -36,67 +36,130 @@ class PrintPreviewPage extends StatelessWidget {
     final pdf = pw.Document();
     final shopName = settings.shopName.isNotEmpty ? settings.shopName : '聪聪木业';
     final dateStr = DateFormat('yyyy-MM-dd').format(order.completeTime ?? order.createTime);
-    pdf.addPage(pw.Page(
-      pageFormat: PdfPageFormat.a4,
-      margin: const pw.EdgeInsets.all(20),
-      build: (ctx) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            // ═══════ 标题 ═══════
-            pw.Center(child: pw.Text(shopName, style: ts(22, bold: true))),
-            pw.SizedBox(height: 2),
-            pw.Center(child: pw.Text('家具销售单', style: ts(16, bold: true))),
-            pw.SizedBox(height: 10),
 
-            // ═══════ 单据信息行 ═══════
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-              decoration: pw.BoxDecoration(
-                border: pw.Border.all(color: PdfColors.grey400, width: 0.5),
-              ),
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('NO: ${order.orderNo}', style: ts(10)),
-                  pw.Text('客户: ${order.customerName ?? ""}', style: ts(10)),
-                  pw.Text('销售日期: $dateStr', style: ts(10)),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 8),
+    if (settings.tripleFormEnabled) {
+      // 三联单模式
+      final copies = settings.tripleFormCopies;
+      final labels = ['白联(存根)', '红联(客户)', '蓝联(记账)'];
+      final colors = [PdfColors.grey400, PdfColors.red300, PdfColors.blue300];
 
-            // ═══════ 商品表格 ═══════
-            _buildTable(font),
-            pw.SizedBox(height: 8),
-
-            // ═══════ 合计金额（大写 + 数字）═══════
-            pw.Text(
-              '合计金额：${_amountToChinese(order.receivable)}  ${order.receivable.toStringAsFixed(2)}',
-              style: ts(11, bold: true),
-            ),
-            pw.SizedBox(height: 6),
-
-            // ═══════ 备注 ═══════
-            if (order.remark != null && order.remark!.isNotEmpty)
-              pw.Text('备注：${order.remark}', style: ts(10)),
-            pw.SizedBox(height: 16),
-
-            // ═══════ 页脚联系信息 ═══════
-            pw.Divider(),
-            pw.SizedBox(height: 4),
-            if (settings.shopPhone.isNotEmpty)
-              pw.Text('订货电话：${settings.shopPhone}', style: ts(9)),
-            if (settings.shopAddress.isNotEmpty)
-              pw.Text('订货地址：${settings.shopAddress}', style: ts(9)),
-            if (settings.bankAccount.isNotEmpty)
-              pw.Text('${settings.bankAccount}', style: ts(9)),
-          ],
-        );
-      },
-    ));
+      if (settings.tripleFormMode == 'continuous') {
+        // 连续打印模式：三联在同一张纸上
+        pdf.addPage(pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(20),
+          build: (ctx) {
+            return pw.Column(
+              children: copies.map((index) {
+                return pw.Column(
+                  children: [
+                    _buildTripleFormContent(font, settings, shopName, dateStr, labels[index], colors[index]),
+                    if (index != copies.last) pw.Divider(height: 20, thickness: 2, color: PdfColors.grey),
+                  ],
+                );
+              }).toList(),
+            );
+          },
+        ));
+      } else {
+        // 分页打印模式：每联单独一页
+        for (final index in copies) {
+          pdf.addPage(pw.Page(
+            pageFormat: PdfPageFormat.a4,
+            margin: const pw.EdgeInsets.all(20),
+            build: (ctx) {
+              return _buildTripleFormContent(font, settings, shopName, dateStr, labels[index], colors[index]);
+            },
+          ));
+        }
+      }
+    } else {
+      // 普通单页模式
+      pdf.addPage(pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(20),
+        build: (ctx) {
+          return _buildTripleFormContent(font, settings, shopName, dateStr, '', PdfColors.grey400);
+        },
+      ));
+    }
 
     return pdf.save();
+  }
+
+  pw.Widget _buildTripleFormContent(
+    pw.Font font,
+    SettingsProvider settings,
+    String shopName,
+    String dateStr,
+    String label,
+    PdfColor labelColor,
+  ) {
+    pw.TextStyle ts(double size, {bool bold = false, PdfColor? color}) =>
+        pw.TextStyle(font: font, fontSize: size, fontWeight: bold ? pw.FontWeight.bold : null, color: color);
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        // 联标签
+        if (label.isNotEmpty)
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            color: labelColor,
+            child: pw.Text(label, style: ts(10, bold: true)),
+          ),
+        pw.SizedBox(height: 8),
+
+        // 标题
+        pw.Center(child: pw.Text(shopName, style: ts(18, bold: true))),
+        pw.SizedBox(height: 2),
+        pw.Center(child: pw.Text('家具销售单', style: ts(14, bold: true))),
+        pw.SizedBox(height: 8),
+
+        // 单据信息行
+        pw.Container(
+          padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PdfColors.grey400, width: 0.5),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('NO: ${order.orderNo}', style: ts(9)),
+              pw.Text('客户: ${order.customerName ?? ""}', style: ts(9)),
+              pw.Text('日期: $dateStr', style: ts(9)),
+            ],
+          ),
+        ),
+        pw.SizedBox(height: 6),
+
+        // 商品表格
+        _buildTable(font),
+        pw.SizedBox(height: 6),
+
+        // 合计金额
+        pw.Text(
+          '合计金额：${_amountToChinese(order.receivable)}  ${order.receivable.toStringAsFixed(2)}',
+          style: ts(10, bold: true),
+        ),
+        pw.SizedBox(height: 4),
+
+        // 备注
+        if (order.remark != null && order.remark!.isNotEmpty)
+          pw.Text('备注：${order.remark}', style: ts(9)),
+        pw.SizedBox(height: 8),
+
+        // 页脚
+        pw.Divider(),
+        pw.SizedBox(height: 2),
+        if (settings.shopPhone.isNotEmpty)
+          pw.Text('电话：${settings.shopPhone}', style: ts(8)),
+        if (settings.shopAddress.isNotEmpty)
+          pw.Text('地址：${settings.shopAddress}', style: ts(8)),
+        if (settings.bankAccount.isNotEmpty)
+          pw.Text(settings.bankAccount, style: ts(8)),
+      ],
+    );
   }
 
   Future<pw.Font> _loadChineseFont() async {
@@ -118,38 +181,35 @@ class PrintPreviewPage extends StatelessWidget {
     pw.TextStyle cell(double size) => pw.TextStyle(font: font, fontSize: size);
     pw.TextStyle cellBold(double size) => pw.TextStyle(font: font, fontSize: size, fontWeight: pw.FontWeight.bold);
 
-    const pad = 6.0;
+    const pad = 4.0;
     final rows = <pw.TableRow>[];
 
     // 表头
     rows.add(pw.TableRow(
       decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFEEEEEE)),
       children: [
-        _tc('编号', hdr(9), pad),
-        _tc('产品', hdr(9), pad),
-        _tc('规格型号', hdr(9), pad),
-        _tc('单位', hdr(9), pad),
-        _tc('总数量', hdr(9), pad, align: pw.TextAlign.center),
-        _tc('单价', hdr(9), pad, align: pw.TextAlign.right),
-        _tc('金额', hdr(9), pad, align: pw.TextAlign.right),
-        _tc('备注', hdr(9), pad),
+        _tc('编号', hdr(8), pad),
+        _tc('产品', hdr(8), pad),
+        _tc('规格', hdr(8), pad),
+        _tc('单位', hdr(8), pad, align: pw.TextAlign.center),
+        _tc('数量', hdr(8), pad, align: pw.TextAlign.center),
+        _tc('单价', hdr(8), pad, align: pw.TextAlign.right),
+        _tc('金额', hdr(8), pad, align: pw.TextAlign.right),
       ],
     ));
 
     // 数据行
-    final totalQty = order.items.fold<int>(0, (s, i) => s + i.quantity.toInt());
     for (var i = 0; i < order.items.length; i++) {
       final item = order.items[i];
       rows.add(pw.TableRow(
         children: [
-          _tc('${i + 1}', cell(9), pad, align: pw.TextAlign.center),
-          _tc(item.name, cell(9), pad),
-          _tc(item.specSummary ?? '', cell(9), pad),
-          _tc(_unitFromItem(item), cell(9), pad, align: pw.TextAlign.center),
-          _tc('${item.quantity}', cell(9), pad, align: pw.TextAlign.center),
-          _tc('${item.price.toStringAsFixed(2)}', cell(9), pad, align: pw.TextAlign.right),
-          _tc('${item.amount.toStringAsFixed(2)}', cell(9), pad, align: pw.TextAlign.right),
-          _tc(item.remark ?? '', cell(8), pad),
+          _tc('${i + 1}', cell(8), pad, align: pw.TextAlign.center),
+          _tc(item.name, cell(8), pad),
+          _tc(item.specSummary ?? '', cell(8), pad),
+          _tc(_unitFromItem(item), cell(8), pad, align: pw.TextAlign.center),
+          _tc('${item.quantity}', cell(8), pad, align: pw.TextAlign.center),
+          _tc('${item.price.toStringAsFixed(2)}', cell(8), pad, align: pw.TextAlign.right),
+          _tc('${item.amount.toStringAsFixed(2)}', cell(8), pad, align: pw.TextAlign.right),
         ],
       ));
     }
@@ -158,34 +218,31 @@ class PrintPreviewPage extends StatelessWidget {
     rows.add(pw.TableRow(
       decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF5F5F5)),
       children: [
-        _tc('', cell(9), pad),
-        _tc('合计', cellBold(9), pad),
-        _tc('', cell(9), pad),
-        _tc('', cell(9), pad),
-        _tc('$totalQty', cellBold(9), pad, align: pw.TextAlign.center),
-        _tc('', cell(9), pad),
-        _tc('${order.receivable.toStringAsFixed(2)}', cellBold(9), pad, align: pw.TextAlign.right),
-        _tc('', cell(9), pad),
+        _tc('', cell(8), pad),
+        _tc('合计', cellBold(8), pad),
+        _tc('', cell(8), pad),
+        _tc('', cell(8), pad),
+        _tc('${order.itemCount}', cellBold(8), pad, align: pw.TextAlign.center),
+        _tc('', cell(8), pad),
+        _tc('${order.receivable.toStringAsFixed(2)}', cellBold(8), pad, align: pw.TextAlign.right),
       ],
     ));
 
     return pw.Table(
       border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
       columnWidths: {
-        0: const pw.FlexColumnWidth(0.6),
+        0: const pw.FlexColumnWidth(0.5),
         1: const pw.FlexColumnWidth(1.5),
-        2: const pw.FlexColumnWidth(1.5),
-        3: const pw.FlexColumnWidth(0.6),
-        4: const pw.FlexColumnWidth(0.8),
-        5: const pw.FlexColumnWidth(1.0),
-        6: const pw.FlexColumnWidth(1.0),
-        7: const pw.FlexColumnWidth(1.2),
+        2: const pw.FlexColumnWidth(1.2),
+        3: const pw.FlexColumnWidth(0.5),
+        4: const pw.FlexColumnWidth(0.6),
+        5: const pw.FlexColumnWidth(0.8),
+        6: const pw.FlexColumnWidth(0.9),
       },
       children: rows,
     );
   }
 
-  /// 从 OrderItem 提取单位信息
   String _unitFromItem(OrderItem item) => item.unit ?? '';
 
   pw.Widget _tc(String text, pw.TextStyle style, double pad, {pw.TextAlign align = pw.TextAlign.left}) {
@@ -195,7 +252,6 @@ class PrintPreviewPage extends StatelessWidget {
     );
   }
 
-  /// 阿拉伯数字转中文大写金额
   String _amountToChinese(double amount) {
     if (amount <= 0) return '零元整';
     final digits = '零壹贰叁肆伍陆柒捌玖';
