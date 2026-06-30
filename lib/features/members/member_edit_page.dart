@@ -51,8 +51,11 @@ class _MemberEditPageState extends State<MemberEditPage> {
 
   String _generateMemberNo() {
     final now = DateTime.now();
-    final ts = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-    final rand = (DateTime.now().microsecondsSinceEpoch % 10000).toString().padLeft(4, '0');
+    final ts =
+        '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
+    final rand = (DateTime.now().microsecondsSinceEpoch % 10000)
+        .toString()
+        .padLeft(4, '0');
     return 'M$ts$rand';
   }
 
@@ -79,9 +82,9 @@ class _MemberEditPageState extends State<MemberEditPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('保存失败：$e')));
       }
     }
   }
@@ -103,7 +106,10 @@ class _MemberEditPageState extends State<MemberEditPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('选择关联客户', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Text(
+                    '选择关联客户',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                   TextButton(
                     onPressed: () {
                       setState(() => _customerId = null);
@@ -130,7 +136,10 @@ class _MemberEditPageState extends State<MemberEditPage> {
                           title: Text(c.name),
                           subtitle: Text(c.phone),
                           trailing: selected
-                              ? const Icon(Icons.check_circle, color: Colors.green)
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                )
                               : null,
                           onTap: () {
                             setState(() => _customerId = c.id);
@@ -183,7 +192,10 @@ class _MemberEditPageState extends State<MemberEditPage> {
             // 姓名
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: '姓名 *', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '姓名 *',
+                border: OutlineInputBorder(),
+              ),
               validator: (v) => v?.trim().isEmpty == true ? '请输入姓名' : null,
             ),
             const SizedBox(height: 12),
@@ -191,7 +203,10 @@ class _MemberEditPageState extends State<MemberEditPage> {
             // 电话
             TextFormField(
               controller: _phoneCtrl,
-              decoration: const InputDecoration(labelText: '电话', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '电话',
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
@@ -199,8 +214,13 @@ class _MemberEditPageState extends State<MemberEditPage> {
             // 会员等级
             DropdownButtonFormField<String>(
               initialValue: _level,
-              decoration: const InputDecoration(labelText: '会员等级', border: OutlineInputBorder()),
-              items: _levels.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
+              decoration: const InputDecoration(
+                labelText: '会员等级',
+                border: OutlineInputBorder(),
+              ),
+              items: _levels
+                  .map((l) => DropdownMenuItem(value: l, child: Text(l)))
+                  .toList(),
               onChanged: (v) => setState(() => _level = v!),
             ),
             const SizedBox(height: 12),
@@ -208,7 +228,10 @@ class _MemberEditPageState extends State<MemberEditPage> {
             // 积分（仅编辑时可修改）
             TextFormField(
               initialValue: '$_points',
-              decoration: const InputDecoration(labelText: '积分', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '积分',
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.number,
               onChanged: (v) => _points = int.tryParse(v) ?? 0,
             ),

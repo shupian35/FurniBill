@@ -50,11 +50,7 @@ void main() {
     });
 
     test('optional fields can be null', () {
-      final item = OrderItem(
-        name: '临时商品',
-        quantity: 1,
-        price: 100.0,
-      );
+      final item = OrderItem(name: '临时商品', quantity: 1, price: 100.0);
 
       expect(item.productId, isNull);
       expect(item.skuId, isNull);
@@ -104,11 +100,7 @@ void main() {
     });
 
     test('itemCount with empty items', () {
-      final order = Order(
-        orderNo: 'FB0001',
-        customerId: 1,
-        items: [],
-      );
+      final order = Order(orderNo: 'FB0001', customerId: 1, items: []);
       expect(order.itemCount, 0);
     });
 
@@ -134,10 +126,7 @@ void main() {
     });
 
     test('default values for new order', () {
-      final order = Order(
-        orderNo: 'FB001',
-        customerId: 2,
-      );
+      final order = Order(orderNo: 'FB001', customerId: 2);
 
       expect(order.items, isEmpty);
       expect(order.totalAmount, 0.0);

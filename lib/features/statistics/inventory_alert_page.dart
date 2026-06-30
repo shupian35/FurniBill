@@ -10,9 +10,7 @@ class InventoryAlertPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('库存预警'),
-      ),
+      appBar: AppBar(title: const Text('库存预警')),
       body: Consumer<ProductProvider>(
         builder: (context, provider, _) {
           if (provider.loading) return const LoadingIndicator();
@@ -47,15 +45,28 @@ class InventoryAlertPage extends StatelessWidget {
       color: Colors.orange.withValues(alpha: 0.1),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.orange,
+            size: 20,
+          ),
           const SizedBox(width: 8),
-          Text('共 ${alerts.length} 个商品库存不足', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            '共 ${alerts.length} 个商品库存不足',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           const Spacer(),
           if (outOfStock > 0)
-            Text('缺货 $outOfStock', style: const TextStyle(color: Colors.red, fontSize: 12)),
+            Text(
+              '缺货 $outOfStock',
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
           if (outOfStock > 0 && lowStock > 0) const SizedBox(width: 8),
           if (lowStock > 0)
-            Text('低库存 $lowStock', style: const TextStyle(color: Colors.orange, fontSize: 12)),
+            Text(
+              '低库存 $lowStock',
+              style: const TextStyle(color: Colors.orange, fontSize: 12),
+            ),
         ],
       ),
     );
@@ -86,7 +97,9 @@ class _AlertCard extends StatelessWidget {
               ? Colors.red.withValues(alpha: 0.15)
               : Colors.orange.withValues(alpha: 0.15),
           child: Icon(
-            _isOutOfStock ? Icons.remove_shopping_cart : Icons.warning_amber_rounded,
+            _isOutOfStock
+                ? Icons.remove_shopping_cart
+                : Icons.warning_amber_rounded,
             color: _isOutOfStock ? Colors.red : Colors.orange,
             size: 20,
           ),
@@ -115,7 +128,10 @@ class _AlertCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   '最低 ${product.minStock}',
-                  style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                 ),
               ],
             ),

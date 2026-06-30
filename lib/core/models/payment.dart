@@ -19,14 +19,14 @@ class Payment {
   }) : createTime = createTime ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'order_id': orderId,
-        'customer_id': customerId,
-        'amount': amount,
-        'method': method,
-        'remark': remark,
-        'create_time': createTime.toIso8601String(),
-      };
+    if (id != null) 'id': id,
+    'order_id': orderId,
+    'customer_id': customerId,
+    'amount': amount,
+    'method': method,
+    'remark': remark,
+    'create_time': createTime.toIso8601String(),
+  };
 
   factory Payment.fromMap(Map<String, dynamic> map) {
     return Payment(

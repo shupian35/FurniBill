@@ -17,13 +17,13 @@ class BackupMeta {
   }) : createTime = createTime ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'file_name': fileName,
-        'device_id': deviceId,
-        'device_name': deviceName,
-        'file_size': fileSize,
-        'create_time': createTime.toIso8601String(),
-      };
+    if (id != null) 'id': id,
+    'file_name': fileName,
+    'device_id': deviceId,
+    'device_name': deviceName,
+    'file_size': fileSize,
+    'create_time': createTime.toIso8601String(),
+  };
 
   factory BackupMeta.fromMap(Map<String, dynamic> map) {
     return BackupMeta(

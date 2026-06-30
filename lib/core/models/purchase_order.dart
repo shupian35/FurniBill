@@ -95,7 +95,9 @@ class PurchaseOrder {
     if (raw.isNotEmpty && raw != '[]') {
       try {
         final list = jsonDecode(raw) as List;
-        parsedItems = list.map((e) => PurchaseOrderItem.fromJson(e as Map<String, dynamic>)).toList();
+        parsedItems = list
+            .map((e) => PurchaseOrderItem.fromJson(e as Map<String, dynamic>))
+            .toList();
       } catch (_) {}
     }
     return PurchaseOrder(

@@ -22,21 +22,21 @@ class Customer {
     this.totalOwing = 0,
     DateTime? createTime,
     DateTime? updateTime,
-  })  : createTime = createTime ?? DateTime.now(),
-        updateTime = updateTime ?? DateTime.now();
+  }) : createTime = createTime ?? DateTime.now(),
+       updateTime = updateTime ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'name': name,
-        'phone': phone,
-        'address': address,
-        'tier': tier,
-        'credit_limit': creditLimit,
-        'due_days': dueDays,
-        'total_owing': totalOwing,
-        'create_time': createTime.toIso8601String(),
-        'update_time': updateTime.toIso8601String(),
-      };
+    if (id != null) 'id': id,
+    'name': name,
+    'phone': phone,
+    'address': address,
+    'tier': tier,
+    'credit_limit': creditLimit,
+    'due_days': dueDays,
+    'total_owing': totalOwing,
+    'create_time': createTime.toIso8601String(),
+    'update_time': updateTime.toIso8601String(),
+  };
 
   factory Customer.fromMap(Map<String, dynamic> map) {
     return Customer(
@@ -62,17 +62,16 @@ class Customer {
     double? creditLimit,
     int? dueDays,
     double? totalOwing,
-  }) =>
-      Customer(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        phone: phone ?? this.phone,
-        address: address ?? this.address,
-        tier: tier ?? this.tier,
-        creditLimit: creditLimit ?? this.creditLimit,
-        dueDays: dueDays ?? this.dueDays,
-        totalOwing: totalOwing ?? this.totalOwing,
-        createTime: createTime,
-        updateTime: DateTime.now(),
-      );
+  }) => Customer(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    phone: phone ?? this.phone,
+    address: address ?? this.address,
+    tier: tier ?? this.tier,
+    creditLimit: creditLimit ?? this.creditLimit,
+    dueDays: dueDays ?? this.dueDays,
+    totalOwing: totalOwing ?? this.totalOwing,
+    createTime: createTime,
+    updateTime: DateTime.now(),
+  );
 }

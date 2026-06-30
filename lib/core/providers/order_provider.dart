@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
+import '../services/order_no_generator.dart';
 import '../models/order.dart';
 import '../models/payment.dart';
 
@@ -42,14 +43,20 @@ class OrderProvider extends ChangeNotifier {
   }
 
   Future<void> _loadOrders() async {
-    final rows = await _db.query('orders',
-        where: 'is_draft = 0', orderBy: 'create_time DESC');
+    final rows = await _db.query(
+      'orders',
+      where: 'is_draft = 0',
+      orderBy: 'create_time DESC',
+    );
     _orders = rows.map((r) => Order.fromMap(r)).toList();
   }
 
   Future<void> _loadDrafts() async {
-    final rows = await _db.query('orders',
-        where: 'is_draft = 1', orderBy: 'create_time DESC');
+    final rows = await _db.query(
+      'orders',
+      where: 'is_draft = 1',
+      orderBy: 'create_time DESC',
+    );
     _drafts = rows.map((r) => Order.fromMap(r)).toList();
   }
 
@@ -64,10 +71,7 @@ class OrderProvider extends ChangeNotifier {
   }
 
   String generateOrderNo() {
-    final now = DateTime.now();
-    final date = DateFormat('yyyyMMdd').format(now);
-    final time = DateFormat('HHmmss').format(now);
-    return 'FB$date$time';
+    return OrderNoGenerator.generate('FB');
   }
 
   Future<int> saveOrder(Order order) async {
@@ -108,22 +112,29 @@ class OrderProvider extends ChangeNotifier {
   }
 
   Future<List<Payment>> getPayments(int orderId) async {
-    final rows = await _db.query('payments',
-        where: 'order_id = ?', whereArgs: [orderId]);
+    final rows = await _db.query(
+      'payments',
+      where: 'order_id = ?',
+      whereArgs: [orderId],
+    );
     return rows.map((r) => Payment.fromMap(r)).toList();
   }
 
   Future<List<Payment>> getCustomerPayments(int customerId) async {
-    final rows = await _db.query('payments',
-        where: 'customer_id = ?', whereArgs: [customerId],
-        orderBy: 'create_time DESC');
+    final rows = await _db.query(
+      'payments',
+      where: 'customer_id = ?',
+      whereArgs: [customerId],
+      orderBy: 'create_time DESC',
+    );
     return rows.map((r) => Payment.fromMap(r)).toList();
   }
 
   // 统计
   Future<Map<String, double>> getTodayStats() async {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final rows = await _db.rawQuery('''
+    final rows = await _db.rawQuery(
+      '''
       SELECT 
         COUNT(*) as order_count,
         COALESCE(SUM(receivable), 0) as total_sales,
@@ -132,9 +143,16 @@ class OrderProvider extends ChangeNotifier {
       FROM orders
       WHERE is_draft = 0 AND status != 'cancelled'
         AND date(create_time) = ?
-    ''', [today]);
+    ''',
+      [today],
+    );
     if (rows.isEmpty) {
-      return {'order_count': 0, 'total_sales': 0, 'total_received': 0, 'total_owing': 0};
+      return {
+        'order_count': 0,
+        'total_sales': 0,
+        'total_received': 0,
+        'total_owing': 0,
+      };
     }
     final r = rows.first;
     return {

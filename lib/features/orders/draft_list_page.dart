@@ -14,10 +14,7 @@ class DraftListPage extends StatelessWidget {
       builder: (context, provider, _) {
         final drafts = provider.drafts;
         if (drafts.isEmpty) {
-          return EmptyState(
-            icon: Icons.bookmark_border,
-            message: '暂无草稿',
-          );
+          return EmptyState(icon: Icons.bookmark_border, message: '暂无草稿');
         }
         return ListView.builder(
           padding: const EdgeInsets.all(8),
@@ -41,27 +38,39 @@ class DraftListPage extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: ListTile(
                   leading: const Icon(Icons.bookmark),
-                  title: Text(d.orderNo, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text(
+                    d.orderNo,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (d.customerName != null) Text(d.customerName!),
-                      Row(children: [
-                        Text('${d.items.length}种'),
-                        const SizedBox(width: 16),
-                        AmountText(amount: d.totalAmount),
-                        const SizedBox(width: 8),
-                        Text(d.createTime.toString().substring(5, 16),
-                            style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
-                      ]),
+                      Row(
+                        children: [
+                          Text('${d.items.length}种'),
+                          const SizedBox(width: 16),
+                          AmountText(amount: d.totalAmount),
+                          const SizedBox(width: 8),
+                          Text(
+                            d.createTime.toString().substring(5, 16),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => OrderCreatePage(draft: d)),
+                      MaterialPageRoute(
+                        builder: (_) => OrderCreatePage(draft: d),
+                      ),
                     );
                   },
                 ),

@@ -43,7 +43,13 @@ class _InventoryCheckPageState extends State<InventoryCheckPage> {
           actualStock = itemRows.first['actual_stock'] as int?;
         }
       }
-      rows.add(_CheckRow(product: p, systemStock: systemStock, actualStock: actualStock));
+      rows.add(
+        _CheckRow(
+          product: p,
+          systemStock: systemStock,
+          actualStock: actualStock,
+        ),
+      );
     }
     setState(() {
       _rows = rows;
@@ -65,16 +71,17 @@ class _InventoryCheckPageState extends State<InventoryCheckPage> {
 
   Future<void> _saveCheck() async {
     if (_checkedCount == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请至少盘点一个商品')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请至少盘点一个商品')));
       return;
     }
 
     setState(() => _saving = true);
     try {
       final now = DateTime.now().toIso8601String();
-      final checkNo = 'PC${now.substring(0, 10).replaceAll('-', '')}${now.substring(11, 13)}${now.substring(14, 16)}';
+      final checkNo =
+          'PC${now.substring(0, 10).replaceAll('-', '')}${now.substring(11, 13)}${now.substring(14, 16)}';
 
       final checkData = {
         'check_no': checkNo,
@@ -107,16 +114,16 @@ class _InventoryCheckPageState extends State<InventoryCheckPage> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('盘点完成')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('盘点完成')));
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('保存失败：$e')));
       }
     } finally {
       setState(() => _saving = false);
@@ -208,7 +215,13 @@ class _SummaryItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+        ),
         const SizedBox(height: 4),
         Text(
           value,
@@ -231,7 +244,9 @@ class _ProductCheckRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final diff = row.actualStock != null ? row.actualStock! - row.systemStock : 0;
+    final diff = row.actualStock != null
+        ? row.actualStock! - row.systemStock
+        : 0;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: Padding(
@@ -243,9 +258,18 @@ class _ProductCheckRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(row.product.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    row.product.name,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   if (row.product.spec != null)
-                    Text(row.product.spec!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
+                    Text(
+                      row.product.spec!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -253,8 +277,17 @@ class _ProductCheckRow extends StatelessWidget {
               flex: 1,
               child: Column(
                 children: [
-                  Text('系统', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline)),
-                  Text(row.systemStock.toString(), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    '系统',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                  Text(
+                    row.systemStock.toString(),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
             ),
@@ -263,7 +296,13 @@ class _ProductCheckRow extends StatelessWidget {
               flex: 1,
               child: Column(
                 children: [
-                  Text('实际', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline)),
+                  Text(
+                    '实际',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
                   SizedBox(
                     width: 60,
                     height: 32,
@@ -272,8 +311,13 @@ class _ProductCheckRow extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 4,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         isDense: true,
                         hintText: '-',
                       ),
@@ -294,7 +338,13 @@ class _ProductCheckRow extends StatelessWidget {
               flex: 1,
               child: Column(
                 children: [
-                  Text('差异', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline)),
+                  Text(
+                    '差异',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
                   Text(
                     row.actualStock != null ? diff.toString() : '-',
                     style: TextStyle(
@@ -302,8 +352,8 @@ class _ProductCheckRow extends StatelessWidget {
                       color: row.actualStock == null
                           ? Colors.grey
                           : diff == 0
-                              ? Colors.green
-                              : Colors.red,
+                          ? Colors.green
+                          : Colors.red,
                     ),
                   ),
                 ],
@@ -321,7 +371,11 @@ class _CheckRow {
   final int systemStock;
   final int? actualStock;
 
-  const _CheckRow({required this.product, required this.systemStock, this.actualStock});
+  const _CheckRow({
+    required this.product,
+    required this.systemStock,
+    this.actualStock,
+  });
 
   _CheckRow copyWith({int? actualStock}) {
     return _CheckRow(

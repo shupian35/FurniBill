@@ -28,24 +28,24 @@ class Product {
     this.barcode,
     DateTime? createTime,
     DateTime? updateTime,
-  })  : createTime = createTime ?? DateTime.now(),
-        updateTime = updateTime ?? DateTime.now();
+  }) : createTime = createTime ?? DateTime.now(),
+       updateTime = updateTime ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'name': name,
-        'spec': spec,
-        'unit': unit,
-        'price': price,
-        'cost_price': costPrice,
-        'stock': stock,
-        'min_stock': minStock,
-        'category_id': categoryId,
-        'image_url': imageUrl,
-        'barcode': barcode,
-        'create_time': createTime.toIso8601String(),
-        'update_time': updateTime.toIso8601String(),
-      };
+    if (id != null) 'id': id,
+    'name': name,
+    'spec': spec,
+    'unit': unit,
+    'price': price,
+    'cost_price': costPrice,
+    'stock': stock,
+    'min_stock': minStock,
+    'category_id': categoryId,
+    'image_url': imageUrl,
+    'barcode': barcode,
+    'create_time': createTime.toIso8601String(),
+    'update_time': updateTime.toIso8601String(),
+  };
 
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
@@ -77,20 +77,19 @@ class Product {
     int? categoryId,
     String? imageUrl,
     String? barcode,
-  }) =>
-      Product(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        spec: spec ?? this.spec,
-        unit: unit ?? this.unit,
-        price: price ?? this.price,
-        costPrice: costPrice ?? this.costPrice,
-        stock: stock ?? this.stock,
-        minStock: minStock ?? this.minStock,
-        categoryId: categoryId ?? this.categoryId,
-        imageUrl: imageUrl ?? this.imageUrl,
-        barcode: barcode ?? this.barcode,
-        createTime: createTime,
-        updateTime: DateTime.now(),
-      );
+  }) => Product(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    spec: spec ?? this.spec,
+    unit: unit ?? this.unit,
+    price: price ?? this.price,
+    costPrice: costPrice ?? this.costPrice,
+    stock: stock ?? this.stock,
+    minStock: minStock ?? this.minStock,
+    categoryId: categoryId ?? this.categoryId,
+    imageUrl: imageUrl ?? this.imageUrl,
+    barcode: barcode ?? this.barcode,
+    createTime: createTime,
+    updateTime: DateTime.now(),
+  );
 }

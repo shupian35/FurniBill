@@ -21,18 +21,12 @@ void main() {
     });
 
     test('address can be null', () {
-      final customer = Customer(
-        name: '新客户',
-        phone: '13900000000',
-      );
+      final customer = Customer(name: '新客户', phone: '13900000000');
       expect(customer.address, isNull);
     });
 
     test('copyWith updates specific fields', () {
-      final updated = sampleCustomer.copyWith(
-        name: '李老板',
-        address: '广州市白云区',
-      );
+      final updated = sampleCustomer.copyWith(name: '李老板', address: '广州市白云区');
 
       expect(updated.name, '李老板');
       expect(updated.address, '广州市白云区');

@@ -1,37 +1,31 @@
-import 'package:flutter/foundation.dart';
-import '../database/database_helper.dart';
 import '../models/customer.dart';
+import 'crud_provider.dart';
 
-class CustomerProvider extends ChangeNotifier {
-  final _db = DatabaseHelper.instance;
-  List<Customer> _customers = [];
-  bool _loading = false;
+class CustomerProvider extends CrudProvider<Customer> {
   String _searchQuery = '';
 
-  List<Customer> get customers => _customers;
-  bool get loading => _loading;
+  @override
+  String get tableName => 'customers';
+
+  @override
+  Customer fromMap(Map<String, dynamic> map) => Customer.fromMap(map);
+
+  @override
+  Map<String, dynamic> toMap(Customer item) => item.toMap();
+
+  @override
+  int? getItemId(Customer item) => item.id;
+
+  List<Customer> get customers => items;
 
   List<Customer> get filteredCustomers {
-    if (_searchQuery.isEmpty) return _customers;
+    if (_searchQuery.isEmpty) return items;
     final q = _searchQuery.toLowerCase();
-    return _customers.where((c) {
+    return items.where((c) {
       return c.name.toLowerCase().contains(q) ||
           c.phone.contains(q) ||
           (c.address?.toLowerCase().contains(q) ?? false);
     }).toList();
-  }
-
-  Future<void> init() async {
-    _loading = true;
-    notifyListeners();
-    await _loadCustomers();
-    _loading = false;
-    notifyListeners();
-  }
-
-  Future<void> _loadCustomers() async {
-    final rows = await _db.query('customers', orderBy: 'update_time DESC');
-    _customers = rows.map((r) => Customer.fromMap(r)).toList();
   }
 
   void setSearch(String query) {
@@ -39,35 +33,17 @@ class CustomerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<int> addCustomer(Customer customer) async {
-    final id = await _db.insert('customers', customer.toMap());
-    await _loadCustomers();
-    notifyListeners();
-    return id;
-  }
-
-  Future<void> updateCustomer(Customer customer) async {
-    await _db.update(
-      'customers',
-      customer.toMap(),
-      where: 'id = ?',
-      whereArgs: [customer.id],
-    );
-    await _loadCustomers();
-    notifyListeners();
-  }
-
-  Future<void> deleteCustomer(int id) async {
-    await _db.delete('customers', where: 'id = ?', whereArgs: [id]);
-    await _loadCustomers();
-    notifyListeners();
-  }
-
   Customer? getById(int id) {
     try {
-      return _customers.firstWhere((c) => c.id == id);
+      return items.firstWhere((c) => c.id == id);
     } catch (_) {
       return null;
     }
   }
+
+  Future<int> addCustomer(Customer customer) => add(customer);
+
+  Future<void> updateCustomer(Customer customer) => update(customer);
+
+  Future<void> deleteCustomer(int id) => delete(id);
 }

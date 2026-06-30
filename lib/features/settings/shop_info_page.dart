@@ -45,7 +45,9 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
     await s.setBankAccount(_bankCtrl.text.trim());
     await s.setFooterText(_footerCtrl.text.trim());
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('保存成功')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('保存成功')));
       Navigator.pop(context);
     }
   }
@@ -59,16 +61,48 @@ class _ShopInfoPageState extends State<ShopInfoPage> {
         children: [
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(labelText: '店铺名称', border: OutlineInputBorder(), hintText: '用于三联单抬头'),
+            decoration: const InputDecoration(
+              labelText: '店铺名称',
+              border: OutlineInputBorder(),
+              hintText: '用于三联单抬头',
+            ),
           ),
           const SizedBox(height: 12),
-          TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: '电话', border: OutlineInputBorder()), keyboardType: TextInputType.phone),
+          TextField(
+            controller: _phoneCtrl,
+            decoration: const InputDecoration(
+              labelText: '电话',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.phone,
+          ),
           const SizedBox(height: 12),
-          TextField(controller: _addressCtrl, decoration: const InputDecoration(labelText: '地址', border: OutlineInputBorder()), maxLines: 2),
+          TextField(
+            controller: _addressCtrl,
+            decoration: const InputDecoration(
+              labelText: '地址',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 2,
+          ),
           const SizedBox(height: 12),
-          TextField(controller: _bankCtrl, decoration: const InputDecoration(labelText: '银行账户', border: OutlineInputBorder(), hintText: '农行：6228 4534 7002 3535 717 户名（谢月亮）')),
+          TextField(
+            controller: _bankCtrl,
+            decoration: const InputDecoration(
+              labelText: '银行账户',
+              border: OutlineInputBorder(),
+              hintText: '农行：6228 4534 7002 3535 717 户名（谢月亮）',
+            ),
+          ),
           const SizedBox(height: 12),
-          TextField(controller: _footerCtrl, decoration: const InputDecoration(labelText: '页脚文字', border: OutlineInputBorder(), hintText: '三联单底部温馨提示')),
+          TextField(
+            controller: _footerCtrl,
+            decoration: const InputDecoration(
+              labelText: '页脚文字',
+              border: OutlineInputBorder(),
+              hintText: '三联单底部温馨提示',
+            ),
+          ),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('保存')),
         ],

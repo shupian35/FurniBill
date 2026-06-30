@@ -85,9 +85,9 @@ class _CustomerCard extends StatelessWidget {
             onPressed: () {
               context.read<CustomerProvider>().deleteCustomer(customer.id!);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('已删除「${customer.name}」')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('已删除「${customer.name}」')));
             },
             child: const Text('删除'),
           ),
@@ -126,7 +126,10 @@ class _CustomerCard extends StatelessWidget {
               ),
             ),
           ),
-          title: Text(customer.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+          title: Text(
+            customer.name,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -135,7 +138,10 @@ class _CustomerCard extends StatelessWidget {
               if (customer.address != null && customer.address!.isNotEmpty)
                 Text(
                   customer.address!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -145,7 +151,9 @@ class _CustomerCard extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => CustomerEditPage(customer: customer)),
+              MaterialPageRoute(
+                builder: (_) => CustomerEditPage(customer: customer),
+              ),
             );
           },
         ),

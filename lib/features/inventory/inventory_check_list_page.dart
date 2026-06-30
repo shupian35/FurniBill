@@ -25,7 +25,10 @@ class _InventoryCheckListPageState extends State<InventoryCheckListPage> {
   Future<void> _loadChecks() async {
     setState(() => _loading = true);
     final db = DatabaseHelper.instance;
-    final rows = await db.query('inventory_checks', orderBy: 'create_time DESC');
+    final rows = await db.query(
+      'inventory_checks',
+      orderBy: 'create_time DESC',
+    );
     _checks = rows.map((r) => InventoryCheck.fromMap(r)).toList();
     setState(() => _loading = false);
   }
@@ -41,10 +44,7 @@ class _InventoryCheckListPageState extends State<InventoryCheckListPage> {
       appBar: AppBar(
         title: const Text('库存盘点'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadChecks,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadChecks),
         ],
       ),
       body: _loading

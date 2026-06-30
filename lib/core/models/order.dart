@@ -27,17 +27,17 @@ class OrderItem {
   }) : amount = amount ?? (quantity * price * discount);
 
   Map<String, dynamic> toJson() => {
-        'product_id': productId,
-        'sku_id': skuId,
-        'name': name,
-        'spec_summary': specSummary,
-        'unit': unit,
-        'quantity': quantity,
-        'price': price,
-        'discount': discount,
-        'amount': amount,
-        'remark': remark,
-      };
+    'product_id': productId,
+    'sku_id': skuId,
+    'name': name,
+    'spec_summary': specSummary,
+    'unit': unit,
+    'quantity': quantity,
+    'price': price,
+    'discount': discount,
+    'amount': amount,
+    'remark': remark,
+  };
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
@@ -102,26 +102,26 @@ class Order {
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity.toInt());
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'order_no': orderNo,
-        'customer_id': customerId,
-        'customer_name': customerName,
-        'items': jsonEncode(items.map((i) => i.toJson()).toList()),
-        'total_amount': totalAmount,
-        'order_discount': orderDiscount,
-        'discount_amount': discountAmount,
-        'round_off': roundOff,
-        'receivable': receivable,
-        'received': received,
-        'owing': owing,
-        'status': status,
-        'clerk': clerk,
-        'remark': remark,
-        'payment_method': paymentMethod,
-        'is_draft': isDraft ? 1 : 0,
-        'create_time': createTime.toIso8601String(),
-        'complete_time': completeTime?.toIso8601String(),
-      };
+    if (id != null) 'id': id,
+    'order_no': orderNo,
+    'customer_id': customerId,
+    'customer_name': customerName,
+    'items': jsonEncode(items.map((i) => i.toJson()).toList()),
+    'total_amount': totalAmount,
+    'order_discount': orderDiscount,
+    'discount_amount': discountAmount,
+    'round_off': roundOff,
+    'receivable': receivable,
+    'received': received,
+    'owing': owing,
+    'status': status,
+    'clerk': clerk,
+    'remark': remark,
+    'payment_method': paymentMethod,
+    'is_draft': isDraft ? 1 : 0,
+    'create_time': createTime.toIso8601String(),
+    'complete_time': completeTime?.toIso8601String(),
+  };
 
   factory Order.fromMap(Map<String, dynamic> map) {
     List<OrderItem> parsedItems = [];
@@ -161,7 +161,9 @@ class Order {
 List<OrderItem> _parseOrderItems(String raw) {
   try {
     final list = jsonDecode(raw) as List;
-    return list.map((e) => OrderItem.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
+        .toList();
   } catch (_) {
     return [];
   }

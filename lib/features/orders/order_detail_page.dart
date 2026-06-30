@@ -31,7 +31,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     final orderProvider = context.read<OrderProvider>();
     await orderProvider.refresh();
     final orders = orderProvider.orders;
-    _order = orders.firstWhere((o) => o.id == widget.orderId, orElse: () => orders.first);
+    _order = orders.firstWhere(
+      (o) => o.id == widget.orderId,
+      orElse: () => orders.first,
+    );
     _payments = await orderProvider.getPayments(widget.orderId);
     setState(() => _loading = false);
   }
@@ -41,26 +44,53 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Future<void> _addPayment() async {
     if (_order == null) return;
     final amountCtrl = TextEditingController();
-    final methodCtrl = TextEditingController(text: _order!.paymentMethod ?? '现金');
+    final methodCtrl = TextEditingController(
+      text: _order!.paymentMethod ?? '现金',
+    );
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('追加收款'),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(controller: amountCtrl, decoration: const InputDecoration(labelText: '金额', border: OutlineInputBorder(), prefixText: '¥'), keyboardType: TextInputType.number),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            value: methodCtrl.text,
-            decoration: const InputDecoration(labelText: '方式', border: OutlineInputBorder()),
-            items: AppConstants.paymentMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-            onChanged: (v) => methodCtrl.text = v ?? '现金',
-          ),
-        ]),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: amountCtrl,
+              decoration: const InputDecoration(
+                labelText: '金额',
+                border: OutlineInputBorder(),
+                prefixText: '¥',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: methodCtrl.text,
+              decoration: const InputDecoration(
+                labelText: '方式',
+                border: OutlineInputBorder(),
+              ),
+              items: AppConstants.paymentMethods
+                  .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                  .toList(),
+              onChanged: (v) => methodCtrl.text = v ?? '现金',
+            ),
+          ],
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          FilledButton(onPressed: () {
-            Navigator.pop(ctx, {'amount': amountCtrl.text, 'method': methodCtrl.text});
-          }, child: const Text('确认收款')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx, {
+                'amount': amountCtrl.text,
+                'method': methodCtrl.text,
+              });
+            },
+            child: const Text('确认收款'),
+          ),
         ],
       ),
     );
@@ -68,30 +98,34 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       final amount = double.tryParse(result['amount']!) ?? 0;
       if (amount <= 0) return;
       final orderProvider = context.read<OrderProvider>();
-      await orderProvider.addPayment(Payment(
-        orderId: _order!.id!,
-        customerId: _order!.customerId,
-        amount: amount,
-        method: result['method']!,
-      ));
+      await orderProvider.addPayment(
+        Payment(
+          orderId: _order!.id!,
+          customerId: _order!.customerId,
+          amount: amount,
+          method: result['method']!,
+        ),
+      );
       final newReceived = _order!.received + amount;
       final newOwing = _order!.receivable - newReceived;
-      await orderProvider.updateOrder(Order(
-        id: _order!.id,
-        orderNo: _order!.orderNo,
-        customerId: _order!.customerId,
-        customerName: _order!.customerName,
-        items: _order!.items,
-        totalAmount: _order!.totalAmount,
-        orderDiscount: _order!.orderDiscount,
-        discountAmount: _order!.discountAmount,
-        roundOff: _order!.roundOff,
-        receivable: _order!.receivable,
-        received: newReceived,
-        owing: newOwing,
-        status: _order!.status,
-        isDraft: false,
-      ));
+      await orderProvider.updateOrder(
+        Order(
+          id: _order!.id,
+          orderNo: _order!.orderNo,
+          customerId: _order!.customerId,
+          customerName: _order!.customerName,
+          items: _order!.items,
+          totalAmount: _order!.totalAmount,
+          orderDiscount: _order!.orderDiscount,
+          discountAmount: _order!.discountAmount,
+          roundOff: _order!.roundOff,
+          receivable: _order!.receivable,
+          received: newReceived,
+          owing: newOwing,
+          status: _order!.status,
+          isDraft: false,
+        ),
+      );
       await _loadOrder();
     }
   }
@@ -116,12 +150,17 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       await orderProvider.cancelOrder(_order!.id!);
       for (final item in _order!.items) {
         if (item.productId != null) {
-          await productProvider.updateStock(item.productId!, item.quantity.toInt());
+          await productProvider.updateStock(
+            item.productId!,
+            item.quantity.toInt(),
+          );
         }
       }
       await _loadOrder();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('退货完成')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('退货完成')));
       }
     }
   }
@@ -129,16 +168,26 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: LoadingIndicator());
-    if (_order == null) return const Scaffold(body: EmptyState(message: '订单不存在'));
+    if (_order == null)
+      return const Scaffold(body: EmptyState(message: '订单不存在'));
 
     final order = _order!;
     return Scaffold(
       appBar: AppBar(
         title: Text(order.orderNo),
         actions: [
-          IconButton(icon: const Icon(Icons.print), tooltip: '补打三联单', onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => PrintPreviewPage(order: order)));
-          }),
+          IconButton(
+            icon: const Icon(Icons.print),
+            tooltip: '补打三联单',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PrintPreviewPage(order: order),
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: ListView(
@@ -148,11 +197,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('客户信息', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text(order.customerName ?? '未知', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-              ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('客户信息', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Text(
+                    order.customerName ?? '未知',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -160,34 +218,63 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('商品明细', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                ...order.items.map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(children: [
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      if (item.specSummary != null && item.specSummary!.isNotEmpty)
-                        Text(item.specSummary!, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
-                    ])),
-                    Text('x${item.quantity}'),
-                    const SizedBox(width: 16),
-                    AmountText(amount: item.amount),
-                  ]),
-                )),
-                const Divider(),
-                _buildAmountRow('商品总额', order.totalAmount),
-                if (order.orderDiscount < 1.0)
-                  _buildAmountRow('整单折扣 -${((1 - order.orderDiscount) * 100).toStringAsFixed(0)}%', -order.discountAmount),
-                if (order.roundOff > 0)
-                  _buildAmountRow('抹零', -order.roundOff),
-                const Divider(),
-                _buildAmountRow('应收合计', order.receivable, bold: true),
-                _buildAmountRow('已收', order.received),
-                if (order.owing > 0)
-                  _buildAmountRow('欠款', order.owing, color: Colors.red),
-              ]),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('商品明细', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  ...order.items.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (item.specSummary != null &&
+                                    item.specSummary!.isNotEmpty)
+                                  Text(
+                                    item.specSummary!,
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.outline,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Text('x${item.quantity}'),
+                          const SizedBox(width: 16),
+                          AmountText(amount: item.amount),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Divider(),
+                  _buildAmountRow('商品总额', order.totalAmount),
+                  if (order.orderDiscount < 1.0)
+                    _buildAmountRow(
+                      '整单折扣 -${((1 - order.orderDiscount) * 100).toStringAsFixed(0)}%',
+                      -order.discountAmount,
+                    ),
+                  if (order.roundOff > 0)
+                    _buildAmountRow('抹零', -order.roundOff),
+                  const Divider(),
+                  _buildAmountRow('应收合计', order.receivable, bold: true),
+                  _buildAmountRow('已收', order.received),
+                  if (order.owing > 0)
+                    _buildAmountRow('欠款', order.owing, color: Colors.red),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -199,7 +286,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 onPressed: _addPayment,
                 icon: const Icon(Icons.payment),
                 label: const Text('追加收款'),
-                style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 48),
+                ),
               ),
             ),
           if (order.status != 'cancelled')
@@ -217,27 +306,53 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           if (_payments.isNotEmpty) ...[
             Text('收款记录', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            ..._payments.map((p) => Card(
-              child: ListTile(
-                title: Text(p.method),
-                subtitle: Text(p.createTime.toString().substring(0, 16)),
-                trailing: AmountText(amount: p.amount, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.green)),
+            ..._payments.map(
+              (p) => Card(
+                child: ListTile(
+                  title: Text(p.method),
+                  subtitle: Text(p.createTime.toString().substring(0, 16)),
+                  trailing: AmountText(
+                    amount: p.amount,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.green,
+                    ),
+                  ),
+                ),
               ),
-            )),
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildAmountRow(String label, double amount, {bool bold = false, Color? color}) {
+  Widget _buildAmountRow(
+    String label,
+    double amount, {
+    bool bold = false,
+    Color? color,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(label, style: TextStyle(fontWeight: bold ? FontWeight.w600 : FontWeight.normal)),
-        Text('¥${amount.toStringAsFixed(2)}',
-            style: TextStyle(fontWeight: bold ? FontWeight.bold : FontWeight.normal, color: color)),
-      ]),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+          Text(
+            '¥${amount.toStringAsFixed(2)}',
+            style: TextStyle(
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

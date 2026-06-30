@@ -35,7 +35,8 @@ class _ReconciliationPageState extends State<ReconciliationPage> {
       if (_dateRange != null) {
         orderRows = await _db.query(
           'orders',
-          where: 'customer_id = ? AND is_draft = 0 AND status != \'cancelled\' AND create_time >= ? AND create_time <= ?',
+          where:
+              'customer_id = ? AND is_draft = 0 AND status != \'cancelled\' AND create_time >= ? AND create_time <= ?',
           whereArgs: [
             c.id,
             _dateRange!.start.toIso8601String(),
@@ -58,13 +59,15 @@ class _ReconciliationPageState extends State<ReconciliationPage> {
       final totalOwing = totalReceivable - totalReceived;
 
       if (orders.isNotEmpty || c.totalOwing > 0) {
-        accounts.add(_CustomerAccount(
-          customer: c,
-          orders: orders,
-          totalReceivable: totalReceivable,
-          totalReceived: totalReceived,
-          totalOwing: totalOwing,
-        ));
+        accounts.add(
+          _CustomerAccount(
+            customer: c,
+            orders: orders,
+            totalReceivable: totalReceivable,
+            totalReceived: totalReceived,
+            totalOwing: totalOwing,
+          ),
+        );
       }
     }
 
@@ -100,10 +103,7 @@ class _ReconciliationPageState extends State<ReconciliationPage> {
       appBar: AppBar(
         title: const Text('客户对账'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadAccounts,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadAccounts),
         ],
       ),
       body: _loading
@@ -127,9 +127,11 @@ class _ReconciliationPageState extends State<ReconciliationPage> {
           FilledButton.tonalIcon(
             onPressed: _pickDateRange,
             icon: const Icon(Icons.date_range, size: 18),
-            label: Text(hasRange
-                ? '${_dateRange!.start.toString().substring(0, 10)} ~ ${_dateRange!.end.toString().substring(0, 10)}'
-                : '选择日期范围'),
+            label: Text(
+              hasRange
+                  ? '${_dateRange!.start.toString().substring(0, 10)} ~ ${_dateRange!.end.toString().substring(0, 10)}'
+                  : '选择日期范围',
+            ),
           ),
           if (hasRange) ...[
             const SizedBox(width: 8),
@@ -146,7 +148,9 @@ class _ReconciliationPageState extends State<ReconciliationPage> {
   Widget _buildSummaryBar(double totalOwing) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      color: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       child: Row(
         children: [
           const Text('合计欠款', style: TextStyle(fontSize: 14)),
@@ -230,11 +234,20 @@ class _CustomerAccountCard extends StatelessWidget {
         ),
         subtitle: Row(
           children: [
-            Text('订单 ${account.orders.length} 笔', style: const TextStyle(fontSize: 12)),
+            Text(
+              '订单 ${account.orders.length} 笔',
+              style: const TextStyle(fontSize: 12),
+            ),
             const SizedBox(width: 12),
-            Text('已付 ¥${account.totalReceived.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12)),
+            Text(
+              '已付 ¥${account.totalReceived.toStringAsFixed(0)}',
+              style: const TextStyle(fontSize: 12),
+            ),
             const SizedBox(width: 12),
-            Text('应收 ¥${account.totalReceivable.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12)),
+            Text(
+              '应收 ¥${account.totalReceivable.toStringAsFixed(0)}',
+              style: const TextStyle(fontSize: 12),
+            ),
           ],
         ),
         trailing: const Icon(Icons.chevron_right),
@@ -248,7 +261,10 @@ class _AccountDetailSheet extends StatelessWidget {
   final _CustomerAccount account;
   final ScrollController scrollController;
 
-  const _AccountDetailSheet({required this.account, required this.scrollController});
+  const _AccountDetailSheet({
+    required this.account,
+    required this.scrollController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -262,15 +278,27 @@ class _AccountDetailSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(account.customer.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    Text('电话：${account.customer.phone}', style: const TextStyle(color: Colors.grey)),
+                    Text(
+                      account.customer.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '电话：${account.customer.phone}',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text('欠款', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text(
+                    '欠款',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   AmountText(
                     amount: account.totalOwing,
                     style: TextStyle(
@@ -295,7 +323,10 @@ class _AccountDetailSheet extends StatelessWidget {
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 2),
                 child: ListTile(
-                  title: Text(order.orderNo, style: const TextStyle(fontSize: 14)),
+                  title: Text(
+                    order.orderNo,
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   subtitle: Text(
                     order.createTime.toString().substring(0, 16),
                     style: const TextStyle(fontSize: 12),
@@ -304,9 +335,18 @@ class _AccountDetailSheet extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      AmountText(amount: order.receivable, style: const TextStyle(fontSize: 14)),
+                      AmountText(
+                        amount: order.receivable,
+                        style: const TextStyle(fontSize: 14),
+                      ),
                       if (order.owing > 0)
-                        Text('欠 ¥${order.owing.toStringAsFixed(0)}', style: const TextStyle(fontSize: 11, color: Colors.red)),
+                        Text(
+                          '欠 ¥${order.owing.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.red,
+                          ),
+                        ),
                     ],
                   ),
                 ),

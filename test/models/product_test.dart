@@ -25,10 +25,7 @@ void main() {
     });
 
     test('spec and unit default to null', () {
-      final product = Product(
-        name: '简单商品',
-        price: 100.0,
-      );
+      final product = Product(name: '简单商品', price: 100.0);
       expect(product.spec, isNull);
       expect(product.unit, isNull);
     });

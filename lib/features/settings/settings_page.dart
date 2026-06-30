@@ -22,9 +22,14 @@ class SettingsPage extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.store),
                 title: const Text('店铺信息'),
-                subtitle: Text(settings.shopName.isNotEmpty ? settings.shopName : '未设置'),
+                subtitle: Text(
+                  settings.shopName.isNotEmpty ? settings.shopName : '未设置',
+                ),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShopInfoPage())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ShopInfoPage()),
+                ),
               ),
               const Divider(),
               // 打印设置
@@ -33,7 +38,10 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('打印设置'),
                 subtitle: Text(settings.paperType),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrintSettingsPage())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrintSettingsPage()),
+                ),
               ),
               const Divider(),
               // 操作偏好
@@ -69,7 +77,10 @@ class SettingsPage extends StatelessWidget {
                 leading: const Icon(Icons.warehouse),
                 title: const Text('仓库管理'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WarehouseListPage())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const WarehouseListPage()),
+                ),
               ),
               const Divider(),
               // 打印模板
@@ -77,7 +88,10 @@ class SettingsPage extends StatelessWidget {
                 leading: const Icon(Icons.description),
                 title: const Text('打印模板'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrintTemplatePage())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrintTemplatePage()),
+                ),
               ),
               const Divider(),
               // 员工管理
@@ -87,9 +101,9 @@ class SettingsPage extends StatelessWidget {
                 subtitle: const Text('功能开发中'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('员工管理功能即将上线')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('员工管理功能即将上线')));
                 },
               ),
               const Divider(),
@@ -99,7 +113,10 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('WebDAV 备份同步'),
                 subtitle: Text(settings.webdavUrl.isNotEmpty ? '已配置' : '未配置'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WebdavPage())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const WebdavPage()),
+                ),
               ),
               const Divider(),
             ],
@@ -114,13 +131,24 @@ class SettingsPage extends StatelessWidget {
       context: context,
       builder: (ctx) => SimpleDialog(
         title: const Text('选择小数位数'),
-        children: [0, 1, 2, 3].map((n) => SimpleDialogOption(
-          onPressed: () {
-            settings.setDecimalPlaces(n);
-            Navigator.pop(ctx);
-          },
-          child: Text('$n 位小数', style: TextStyle(fontWeight: settings.decimalPlaces == n ? FontWeight.bold : FontWeight.normal)),
-        )).toList(),
+        children: [0, 1, 2, 3]
+            .map(
+              (n) => SimpleDialogOption(
+                onPressed: () {
+                  settings.setDecimalPlaces(n);
+                  Navigator.pop(ctx);
+                },
+                child: Text(
+                  '$n 位小数',
+                  style: TextStyle(
+                    fontWeight: settings.decimalPlaces == n
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }

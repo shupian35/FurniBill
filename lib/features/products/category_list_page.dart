@@ -45,9 +45,7 @@ class CategoryListPage extends StatelessWidget {
   void _navigateToEdit(BuildContext context, [Category? category]) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => CategoryEditPage(category: category),
-      ),
+      MaterialPageRoute(builder: (_) => CategoryEditPage(category: category)),
     );
   }
 }
@@ -72,9 +70,9 @@ class _CategoryCard extends StatelessWidget {
             onPressed: () {
               context.read<CategoryProvider>().deleteCategory(category.id!);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('已删除「${category.name}」')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('已删除「${category.name}」')));
             },
             child: const Text('删除'),
           ),
@@ -88,7 +86,9 @@ class _CategoryCard extends StatelessWidget {
     final provider = context.watch<CategoryProvider>();
     String? parentName;
     if (category.parentId != null) {
-      final parent = provider.categories.where((c) => c.id == category.parentId);
+      final parent = provider.categories.where(
+        (c) => c.id == category.parentId,
+      );
       if (parent.isNotEmpty) parentName = parent.first.name;
     }
 
@@ -112,16 +112,36 @@ class _CategoryCard extends StatelessWidget {
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            child: Icon(Icons.category, color: Theme.of(context).colorScheme.onPrimaryContainer),
+            child: Icon(
+              Icons.category,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
           ),
-          title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Row(children: [
-            if (parentName != null) ...[
-              Text('上级: $parentName', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
-              const SizedBox(width: 8),
+          title: Text(
+            category.name,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Row(
+            children: [
+              if (parentName != null) ...[
+                Text(
+                  '上级: $parentName',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                '排序: ${category.sortOrder}',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.outline,
+                  fontSize: 12,
+                ),
+              ),
             ],
-            Text('排序: ${category.sortOrder}', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
-          ]),
+          ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             Navigator.push(

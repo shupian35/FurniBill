@@ -58,9 +58,9 @@ class _WarehouseCard extends StatelessWidget {
 
   void _confirmDelete(BuildContext context) {
     if (warehouse.isDefault) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('默认仓库不能删除')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('默认仓库不能删除')));
       return;
     }
     showDialog(
@@ -78,9 +78,9 @@ class _WarehouseCard extends StatelessWidget {
             onPressed: () {
               context.read<WarehouseProvider>().deleteWarehouse(warehouse.id!);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('已删除「${warehouse.name}」')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('已删除「${warehouse.name}」')));
             },
             child: const Text('删除'),
           ),
@@ -111,29 +111,58 @@ class _WarehouseCard extends StatelessWidget {
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            child: Icon(Icons.warehouse, color: Theme.of(context).colorScheme.onPrimaryContainer),
+            child: Icon(
+              Icons.warehouse,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
           ),
-          title: Row(children: [
-            Text(warehouse.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-            if (warehouse.isDefault) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text('默认', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.primary)),
+          title: Row(
+            children: [
+              Text(
+                warehouse.name,
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
+              if (warehouse.isDefault) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '默认',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ]),
+          ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (warehouse.address != null && warehouse.address!.isNotEmpty)
-                Text(warehouse.address!, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
+                Text(
+                  warehouse.address!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                  ),
+                ),
               if (warehouse.phone != null && warehouse.phone!.isNotEmpty)
-                Text(warehouse.phone!, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
+                Text(
+                  warehouse.phone!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                  ),
+                ),
             ],
           ),
           trailing: const Icon(Icons.chevron_right),

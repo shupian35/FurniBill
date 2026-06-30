@@ -26,7 +26,8 @@ class WarehouseProvider extends ChangeNotifier {
   Warehouse? get defaultWarehouse {
     return _warehouses.firstWhere(
       (w) => w.isDefault,
-      orElse: () => _warehouses.isNotEmpty ? _warehouses.first : Warehouse(name: '默认仓库'),
+      orElse: () =>
+          _warehouses.isNotEmpty ? _warehouses.first : Warehouse(name: '默认仓库'),
     );
   }
 

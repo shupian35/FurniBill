@@ -29,8 +29,13 @@ class AppSearchBar extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          fillColor: Theme.of(
+            context,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
         ),
       ),
     );
@@ -61,14 +66,19 @@ class EmptyState extends StatelessWidget {
           children: [
             Icon(icon, size: 64, color: Theme.of(context).colorScheme.outline),
             const SizedBox(height: 16),
-            Text(message,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                textAlign: TextAlign.center),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.outline,
+              ),
+              textAlign: TextAlign.center,
+            ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 16),
-              FilledButton.tonal(onPressed: onAction, child: Text(actionLabel!)),
+              FilledButton.tonal(
+                onPressed: onAction,
+                child: Text(actionLabel!),
+              ),
             ],
           ],
         ),
@@ -127,10 +137,7 @@ class ConfirmDialog extends StatelessWidget {
           onPressed: () => Navigator.pop(context, false),
           child: const Text('取消'),
         ),
-        FilledButton(
-          onPressed: onConfirm,
-          child: Text(confirmLabel),
-        ),
+        FilledButton(onPressed: onConfirm, child: Text(confirmLabel)),
       ],
     );
   }
@@ -161,11 +168,7 @@ class StatusChip extends StatelessWidget {
   final String status;
   final Map<String, Color>? colorMap;
 
-  const StatusChip({
-    super.key,
-    required this.status,
-    this.colorMap,
-  });
+  const StatusChip({super.key, required this.status, this.colorMap});
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +189,11 @@ class StatusChip extends StatelessWidget {
       ),
       child: Text(
         status,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

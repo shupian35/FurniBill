@@ -43,9 +43,9 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
   Future<void> _saveTemplate() async {
     await context.read<SettingsProvider>().setPrintTemplate(_selectedTemplate);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('模板已保存')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('模板已保存')));
       Navigator.pop(context);
     }
   }
@@ -77,9 +77,15 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
             height: 200,
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.3),
+              ),
             ),
             child: _buildPreview(context),
           ),
@@ -115,7 +121,13 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(shopName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text(
+                shopName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
               const Divider(height: 8),
               _previewRow('商品A ×2', '¥100.00'),
               _previewRow('商品B ×1', '¥200.00'),
@@ -123,8 +135,17 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('合计', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('¥300.00', style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                  const Text(
+                    '合计',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '¥300.00',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -137,9 +158,20 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Text(shopName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                child: Text(
+                  shopName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
               ),
-              Center(child: Text('家具销售单', style: TextStyle(fontSize: 12, color: colorScheme.outline))),
+              Center(
+                child: Text(
+                  '家具销售单',
+                  style: TextStyle(fontSize: 12, color: colorScheme.outline),
+                ),
+              ),
               const SizedBox(height: 4),
               _previewRow('单号：NO20260617001', '日期：2026-06-17'),
               _previewRow('客户：示例客户', ''),
@@ -149,7 +181,10 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
               const Divider(height: 8),
               _previewRow('合计金额：¥300.00', ''),
               const SizedBox(height: 4),
-              Text('备注：示例备注', style: TextStyle(fontSize: 10, color: colorScheme.outline)),
+              Text(
+                '备注：示例备注',
+                style: TextStyle(fontSize: 10, color: colorScheme.outline),
+              ),
               const Spacer(),
               _previewRow('客户签名：________', '日期：________'),
             ],
@@ -162,9 +197,20 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Text(shopName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                child: Text(
+                  shopName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
               ),
-              Center(child: Text('家具销售单', style: TextStyle(fontSize: 12, color: colorScheme.outline))),
+              Center(
+                child: Text(
+                  '家具销售单',
+                  style: TextStyle(fontSize: 12, color: colorScheme.outline),
+                ),
+              ),
               const SizedBox(height: 4),
               _previewRow('单号：NO20260617001', '客户：示例客户'),
               const Divider(height: 8),
@@ -174,8 +220,17 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('合计', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('¥300.00', style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary)),
+                  const Text(
+                    '合计',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '¥300.00',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -191,7 +246,8 @@ class _PrintTemplatePageState extends State<PrintTemplatePage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(left, style: const TextStyle(fontSize: 11)),
-          if (right.isNotEmpty) Text(right, style: const TextStyle(fontSize: 11)),
+          if (right.isNotEmpty)
+            Text(right, style: const TextStyle(fontSize: 11)),
         ],
       ),
     );
@@ -240,10 +296,20 @@ class _TemplateCard extends StatelessWidget {
           backgroundColor: selected
               ? colorScheme.primary.withValues(alpha: 0.15)
               : colorScheme.surfaceContainerHighest,
-          child: Icon(template.icon, color: selected ? colorScheme.primary : colorScheme.outline),
+          child: Icon(
+            template.icon,
+            color: selected ? colorScheme.primary : colorScheme.outline,
+          ),
         ),
-        title: Text(template.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(template.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+        title: Text(
+          template.name,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          template.description,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         trailing: selected
             ? Icon(Icons.check_circle, color: colorScheme.primary)
             : Icon(Icons.radio_button_unchecked, color: colorScheme.outline),

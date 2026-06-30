@@ -55,7 +55,9 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
       id: widget.customer?.id,
       name: _nameCtrl.text.trim(),
       phone: _phoneCtrl.text.trim(),
-      address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      address: _addressCtrl.text.trim().isEmpty
+          ? null
+          : _addressCtrl.text.trim(),
       tier: _tier,
       creditLimit: double.tryParse(_creditLimitCtrl.text) ?? 0,
       dueDays: int.tryParse(_dueDaysCtrl.text) ?? 0,
@@ -74,9 +76,9 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('保存失败：$e')));
       }
     }
   }
@@ -92,26 +94,38 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
           children: [
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: '客户名称 *', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '客户名称 *',
+                border: OutlineInputBorder(),
+              ),
               validator: (v) => v?.trim().isEmpty == true ? '请输入客户名称' : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phoneCtrl,
-              decoration: const InputDecoration(labelText: '电话 *', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '电话 *',
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.phone,
               validator: (v) => v?.trim().isEmpty == true ? '请输入电话' : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _addressCtrl,
-              decoration: const InputDecoration(labelText: '地址', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '地址',
+                border: OutlineInputBorder(),
+              ),
               maxLines: 2,
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _tier,
-              decoration: const InputDecoration(labelText: '客户等级', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '客户等级',
+                border: OutlineInputBorder(),
+              ),
               items: const [
                 DropdownMenuItem(value: '普通', child: Text('普通')),
                 DropdownMenuItem(value: 'VIP', child: Text('VIP')),
@@ -121,13 +135,36 @@ class _CustomerEditPageState extends State<CustomerEditPage> {
               onChanged: (v) => setState(() => _tier = v ?? '普通'),
             ),
             const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: TextFormField(controller: _creditLimitCtrl, decoration: const InputDecoration(labelText: '信用额度', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
-              const SizedBox(width: 12),
-              Expanded(child: TextFormField(controller: _dueDaysCtrl, decoration: const InputDecoration(labelText: '账期天数', border: OutlineInputBorder()), keyboardType: TextInputType.number)),
-            ]),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _creditLimitCtrl,
+                    decoration: const InputDecoration(
+                      labelText: '信用额度',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _dueDaysCtrl,
+                    decoration: const InputDecoration(
+                      labelText: '账期天数',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
-            FilledButton(onPressed: _saving ? null : _save, child: Text(_saving ? '保存中...' : '保存')),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              child: Text(_saving ? '保存中...' : '保存'),
+            ),
             const SizedBox(height: 32),
           ],
         ),

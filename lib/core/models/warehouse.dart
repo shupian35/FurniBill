@@ -41,13 +41,12 @@ class Warehouse {
     String? address,
     String? phone,
     bool? isDefault,
-  }) =>
-      Warehouse(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        address: address ?? this.address,
-        phone: phone ?? this.phone,
-        isDefault: isDefault ?? this.isDefault,
-        createTime: createTime,
-      );
+  }) => Warehouse(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    address: address ?? this.address,
+    phone: phone ?? this.phone,
+    isDefault: isDefault ?? this.isDefault,
+    createTime: createTime,
+  );
 }

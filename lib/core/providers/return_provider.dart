@@ -1,28 +1,28 @@
-import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-import '../database/database_helper.dart';
 import '../models/return_order.dart';
+import '../services/stock_manager.dart';
+import '../database/database_helper.dart';
+import 'crud_provider.dart';
 
-class ReturnProvider extends ChangeNotifier {
+class ReturnProvider extends CrudProvider<ReturnOrder> {
+  final _stockManager = StockManager();
   final _db = DatabaseHelper.instance;
-  List<ReturnOrder> _returns = [];
-  bool _loading = false;
 
-  List<ReturnOrder> get returns => _returns;
-  bool get loading => _loading;
+  @override
+  String get tableName => 'return_orders';
 
-  Future<void> init() async {
-    _loading = true;
-    notifyListeners();
-    await _loadReturns();
-    _loading = false;
-    notifyListeners();
-  }
+  @override
+  ReturnOrder fromMap(Map<String, dynamic> map) => ReturnOrder.fromMap(map);
 
-  Future<void> _loadReturns() async {
-    final rows = await _db.query('return_orders', orderBy: 'create_time DESC');
-    _returns = rows.map((r) => ReturnOrder.fromMap(r)).toList();
-  }
+  @override
+  Map<String, dynamic> toMap(ReturnOrder item) => item.toMap();
+
+  @override
+  int? getItemId(ReturnOrder item) => item.id;
+
+  List<ReturnOrder> get returns => items;
+
+  Future<void> deleteReturn(int id) => delete(id);
 
   String generateOrderNo() {
     final now = DateTime.now();
@@ -31,45 +31,25 @@ class ReturnProvider extends ChangeNotifier {
     return 'RO$date$time';
   }
 
-  Future<int> saveReturn(ReturnOrder returnOrder) async {
-    final id = await _db.insert('return_orders', returnOrder.toMap());
-    await refresh();
-    return id;
-  }
-
-  Future<void> updateReturn(ReturnOrder returnOrder) async {
+  Future<void> completeReturn(
+    ReturnOrder returnOrder,
+    Map<int, int> stockChanges,
+  ) async {
     await _db.update(
       'return_orders',
-      returnOrder.toMap(),
+      {
+        'status': 'completed',
+        'complete_time': DateTime.now().toIso8601String(),
+      },
       where: 'id = ?',
       whereArgs: [returnOrder.id],
     );
-    await refresh();
-  }
-
-  Future<void> deleteReturn(int id) async {
-    await _db.delete('return_orders', where: 'id = ?', whereArgs: [id]);
-    await refresh();
-  }
-
-  Future<void> completeReturn(ReturnOrder returnOrder, Map<int, int> stockChanges) async {
-    await _db.update(
-      'return_orders',
-      {'status': 'completed', 'complete_time': DateTime.now().toIso8601String()},
-      where: 'id = ?',
-      whereArgs: [returnOrder.id],
+    final reason = returnOrder.type == 'sales_return' ? '销售退货入库' : '采购退货出库';
+    await _stockManager.adjustStockBatch(
+      stockChanges,
+      orderNo: returnOrder.orderNo,
+      reason: reason,
     );
-    for (final entry in stockChanges.entries) {
-      await _db.rawUpdate(
-        'UPDATE products SET stock = stock + ? WHERE id = ?',
-        [entry.value, entry.key],
-      );
-    }
     await refresh();
-  }
-
-  Future<void> refresh() async {
-    await _loadReturns();
-    notifyListeners();
   }
 }

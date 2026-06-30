@@ -121,7 +121,15 @@ class _PurchaseOrderCard extends StatelessWidget {
         child: ListTile(
           title: Row(
             children: [
-              Expanded(child: Text(order.orderNo, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+              Expanded(
+                child: Text(
+                  order.orderNo,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
               StatusChip(status: _statusLabel),
             ],
           ),
@@ -129,15 +137,28 @@ class _PurchaseOrderCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${order.supplierName ?? "供应商"}  |  ${order.items.length}种 ${order.items.fold(0, (s, i) => s + i.quantity.toInt())}件'),
-              Row(children: [
-                AmountText(amount: order.totalAmount, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary)),
-                const SizedBox(width: 8),
-                Text(
-                  order.createTime.toString().substring(0, 16),
-                  style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12),
-                ),
-              ]),
+              Text(
+                '${order.supplierName ?? "供应商"}  |  ${order.items.length}种 ${order.items.fold(0, (s, i) => s + i.quantity.toInt())}件',
+              ),
+              Row(
+                children: [
+                  AmountText(
+                    amount: order.totalAmount,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    order.createTime.toString().substring(0, 16),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           trailing: const Icon(Icons.chevron_right),

@@ -3,13 +3,7 @@ class AppConstants {
   static const String appVersion = '1.0.0';
 
   // 收款方式
-  static const List<String> paymentMethods = [
-    '现金',
-    '微信',
-    '支付宝',
-    '转账',
-    '挂账',
-  ];
+  static const List<String> paymentMethods = ['现金', '微信', '支付宝', '转账', '挂账'];
 
   // 订单状态
   static const Map<String, String> orderStatusMap = {

@@ -132,7 +132,15 @@ class _ReturnOrderCard extends StatelessWidget {
         child: ListTile(
           title: Row(
             children: [
-              Expanded(child: Text(returnOrder.orderNo, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+              Expanded(
+                child: Text(
+                  returnOrder.orderNo,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
               StatusChip(status: _statusLabel),
             ],
           ),
@@ -140,31 +148,55 @@ class _ReturnOrderCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: returnOrder.type == 'sales_return'
-                        ? Colors.blue.withValues(alpha: 0.15)
-                        : Colors.orange.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: returnOrder.type == 'sales_return'
+                          ? Colors.blue.withValues(alpha: 0.15)
+                          : Colors.orange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _typeLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: returnOrder.type == 'sales_return'
+                            ? Colors.blue
+                            : Colors.orange,
+                      ),
+                    ),
                   ),
-                  child: Text(_typeLabel, style: TextStyle(
-                    fontSize: 11,
-                    color: returnOrder.type == 'sales_return' ? Colors.blue : Colors.orange,
-                  )),
-                ),
-                const SizedBox(width: 8),
-                Text(returnOrder.supplierName ?? (returnOrder.customerId != null ? '客户' : '未关联')),
-              ]),
-              Row(children: [
-                AmountText(amount: returnOrder.totalAmount, style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.primary)),
-                const SizedBox(width: 8),
-                Text(
-                  returnOrder.createTime.toString().substring(0, 16),
-                  style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12),
-                ),
-              ]),
+                  const SizedBox(width: 8),
+                  Text(
+                    returnOrder.supplierName ??
+                        (returnOrder.customerId != null ? '客户' : '未关联'),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  AmountText(
+                    amount: returnOrder.totalAmount,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    returnOrder.createTime.toString().substring(0, 16),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           trailing: const Icon(Icons.chevron_right),

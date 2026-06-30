@@ -60,9 +60,7 @@ class ProductListPage extends StatelessWidget {
   void _navigateToEdit(BuildContext context, [Product? product]) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => ProductEditPage(product: product),
-      ),
+      MaterialPageRoute(builder: (_) => ProductEditPage(product: product)),
     );
   }
 }
@@ -87,9 +85,9 @@ class _ProductCard extends StatelessWidget {
             onPressed: () {
               context.read<ProductProvider>().deleteProduct(product.id!);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('已删除「${product.name}」')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('已删除「${product.name}」')));
             },
             child: const Text('删除'),
           ),
@@ -120,24 +118,53 @@ class _ProductCard extends StatelessWidget {
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            child: Icon(Icons.chair, color: Theme.of(context).colorScheme.onPrimaryContainer),
-          ),
-          title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Row(children: [
-            if (product.spec != null && product.spec!.isNotEmpty) ...[
-              Text(product.spec!, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
-              const SizedBox(width: 8),
-            ],
-            AmountText(
-              amount: product.price,
-              style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
+            child: Icon(
+              Icons.chair,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
-            if (product.unit != null && product.unit!.isNotEmpty) ...[
-              const SizedBox(width: 4),
-              Text('/${product.unit}', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
+          ),
+          title: Text(
+            product.name,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Row(
+            children: [
+              if (product.spec != null && product.spec!.isNotEmpty) ...[
+                Text(
+                  product.spec!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              AmountText(
+                amount: product.price,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (product.unit != null && product.unit!.isNotEmpty) ...[
+                const SizedBox(width: 4),
+                Text(
+                  '/${product.unit}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+              Text(
+                '  库存: ${product.stock}',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.outline,
+                  fontSize: 12,
+                ),
+              ),
             ],
-            Text('  库存: ${product.stock}', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
-          ]),
+          ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             Navigator.push(

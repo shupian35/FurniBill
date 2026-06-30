@@ -31,12 +31,7 @@ class Category {
     );
   }
 
-  Category copyWith({
-    int? id,
-    String? name,
-    int? parentId,
-    int? sortOrder,
-  }) =>
+  Category copyWith({int? id, String? name, int? parentId, int? sortOrder}) =>
       Category(
         id: id ?? this.id,
         name: name ?? this.name,

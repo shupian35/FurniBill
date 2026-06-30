@@ -85,9 +85,9 @@ class _MemberCard extends StatelessWidget {
             onPressed: () {
               context.read<MemberProvider>().deleteMember(member.id!);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('已删除「${member.name}」')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('已删除「${member.name}」')));
             },
             child: const Text('删除'),
           ),
@@ -134,10 +134,7 @@ class _MemberCard extends StatelessWidget {
             backgroundColor: color.withValues(alpha: 0.15),
             child: Text(
               member.name.isNotEmpty ? member.name[0] : '?',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
           ),
           title: Row(
@@ -156,7 +153,11 @@ class _MemberCard extends StatelessWidget {
                 ),
                 child: Text(
                   member.level,
-                  style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],

@@ -48,7 +48,9 @@ class _WarehouseEditPageState extends State<WarehouseEditPage> {
     final warehouse = Warehouse(
       id: widget.warehouse?.id,
       name: _nameCtrl.text.trim(),
-      address: _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      address: _addressCtrl.text.trim().isEmpty
+          ? null
+          : _addressCtrl.text.trim(),
       phone: _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
       isDefault: _isDefault,
     );
@@ -71,18 +73,27 @@ class _WarehouseEditPageState extends State<WarehouseEditPage> {
           children: [
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: '仓库名称 *', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '仓库名称 *',
+                border: OutlineInputBorder(),
+              ),
               validator: (v) => v?.trim().isEmpty == true ? '请输入名称' : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _addressCtrl,
-              decoration: const InputDecoration(labelText: '地址', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '地址',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phoneCtrl,
-              decoration: const InputDecoration(labelText: '联系电话', border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                labelText: '联系电话',
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
@@ -94,7 +105,10 @@ class _WarehouseEditPageState extends State<WarehouseEditPage> {
               contentPadding: EdgeInsets.zero,
             ),
             const SizedBox(height: 24),
-            FilledButton(onPressed: _saving ? null : _save, child: Text(_saving ? '保存中...' : '保存')),
+            FilledButton(
+              onPressed: _saving ? null : _save,
+              child: Text(_saving ? '保存中...' : '保存'),
+            ),
             const SizedBox(height: 32),
           ],
         ),

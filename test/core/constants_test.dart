@@ -49,11 +49,7 @@ void main() {
     });
 
     test('triple form colors', () {
-      expect(AppConstants.tripleFormColors, [
-        '白联(存根)',
-        '红联(客户)',
-        '蓝联(记账)',
-      ]);
+      expect(AppConstants.tripleFormColors, ['白联(存根)', '红联(客户)', '蓝联(记账)']);
       expect(AppConstants.tripleFormColors.length, 3);
     });
 

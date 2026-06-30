@@ -20,15 +20,15 @@ class Member {
   }) : createTime = createTime ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'customer_id': customerId,
-        'member_no': memberNo,
-        'name': name,
-        'phone': phone,
-        'points': points,
-        'level': level,
-        'create_time': createTime.toIso8601String(),
-      };
+    if (id != null) 'id': id,
+    'customer_id': customerId,
+    'member_no': memberNo,
+    'name': name,
+    'phone': phone,
+    'points': points,
+    'level': level,
+    'create_time': createTime.toIso8601String(),
+  };
 
   factory Member.fromMap(Map<String, dynamic> map) {
     return Member(
@@ -51,15 +51,14 @@ class Member {
     String? phone,
     int? points,
     String? level,
-  }) =>
-      Member(
-        id: id ?? this.id,
-        customerId: customerId ?? this.customerId,
-        memberNo: memberNo ?? this.memberNo,
-        name: name ?? this.name,
-        phone: phone ?? this.phone,
-        points: points ?? this.points,
-        level: level ?? this.level,
-        createTime: createTime,
-      );
+  }) => Member(
+    id: id ?? this.id,
+    customerId: customerId ?? this.customerId,
+    memberNo: memberNo ?? this.memberNo,
+    name: name ?? this.name,
+    phone: phone ?? this.phone,
+    points: points ?? this.points,
+    level: level ?? this.level,
+    createTime: createTime,
+  );
 }

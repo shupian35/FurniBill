@@ -1,36 +1,35 @@
-import 'package:flutter/foundation.dart';
-import '../database/database_helper.dart';
 import '../models/product.dart';
+import '../services/stock_manager.dart';
+import 'crud_provider.dart';
 
-class ProductProvider extends ChangeNotifier {
-  final _db = DatabaseHelper.instance;
-  List<Product> _products = [];
-  bool _loading = false;
+class ProductProvider extends CrudProvider<Product> {
+  final _stockManager = StockManager();
   String _searchQuery = '';
 
-  List<Product> get products => _products;
-  bool get loading => _loading;
+  @override
+  String get tableName => 'products';
+
+  @override
+  String get defaultOrderBy => 'update_time DESC';
+
+  @override
+  Product fromMap(Map<String, dynamic> map) => Product.fromMap(map);
+
+  @override
+  Map<String, dynamic> toMap(Product item) => item.toMap();
+
+  @override
+  int? getItemId(Product item) => item.id;
+
+  List<Product> get products => items;
 
   List<Product> get filteredProducts {
-    if (_searchQuery.isEmpty) return _products;
+    if (_searchQuery.isEmpty) return items;
     final q = _searchQuery.toLowerCase();
-    return _products.where((p) {
+    return items.where((p) {
       return p.name.toLowerCase().contains(q) ||
           (p.spec?.toLowerCase().contains(q) ?? false);
     }).toList();
-  }
-
-  Future<void> init() async {
-    _loading = true;
-    notifyListeners();
-    await _loadProducts();
-    _loading = false;
-    notifyListeners();
-  }
-
-  Future<void> _loadProducts() async {
-    final rows = await _db.query('products', orderBy: 'update_time DESC');
-    _products = rows.map((r) => Product.fromMap(r)).toList();
   }
 
   void setSearch(String query) {
@@ -38,44 +37,24 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<int> addProduct(Product product) async {
-    final id = await _db.insert('products', product.toMap());
-    await _loadProducts();
-    notifyListeners();
-    return id;
-  }
+  Future<int> addProduct(Product product) => add(product);
 
-  Future<void> updateProduct(Product product) async {
-    await _db.update(
-      'products',
-      product.toMap(),
-      where: 'id = ?',
-      whereArgs: [product.id],
+  Future<void> updateProduct(Product product) => update(product);
+
+  Future<void> deleteProduct(int id) => delete(id);
+
+  Future<void> updateStock(
+    int productId,
+    int change, {
+    String? orderNo,
+    String? reason,
+  }) async {
+    await _stockManager.adjustStock(
+      productId,
+      change,
+      orderNo: orderNo,
+      reason: reason ?? (change > 0 ? '补货' : '销售出库'),
     );
-    await _loadProducts();
-    notifyListeners();
-  }
-
-  Future<void> deleteProduct(int id) async {
-    await _db.delete('products', where: 'id = ?', whereArgs: [id]);
-    await _loadProducts();
-    notifyListeners();
-  }
-
-  Future<void> updateStock(int productId, int change, {String? orderNo}) async {
-    final product = _products.firstWhere((p) => p.id == productId);
-    final newStock = product.stock + change;
-    await _db.update('products', {'stock': newStock},
-        where: 'id = ?', whereArgs: [productId]);
-    await _db.insert('inventory_logs', {
-      'product_id': productId,
-      'change_amount': change,
-      'after_stock': newStock,
-      'reason': change > 0 ? '补货' : '销售出库',
-      'order_no': orderNo,
-      'create_time': DateTime.now().toIso8601String(),
-    });
-    await _loadProducts();
-    notifyListeners();
+    await refresh();
   }
 }
