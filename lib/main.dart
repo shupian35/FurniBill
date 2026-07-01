@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:ui' show PlatformDispatcher;
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/providers/product_provider.dart';
 import 'core/providers/customer_provider.dart';
@@ -138,3 +139,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
