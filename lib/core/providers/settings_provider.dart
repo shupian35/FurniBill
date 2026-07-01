@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _Setting<T> {
@@ -117,20 +117,24 @@ class SettingsProvider extends ChangeNotifier {
   String get tripleFormMode => _settings['triple_form_mode']!.value;
 
   Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    _settings.forEach((key, setting) {
-      if (setting is _Setting<bool>) {
-        setting.value = prefs.getBool(key) ?? setting.defaultValue;
-      } else if (setting is _Setting<int>) {
-        setting.value = prefs.getInt(key) ?? setting.defaultValue;
-      } else if (setting is _Setting<String>) {
-        setting.value = prefs.getString(key) ?? setting.defaultValue;
-      }
-    });
-    _tripleFormCopies =
-        (prefs.getStringList('triple_form_copies') ?? ['0', '1', '2'])
-            .map(int.parse)
-            .toList();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _settings.forEach((key, setting) {
+        if (setting is _Setting<bool>) {
+          setting.value = prefs.getBool(key) ?? setting.defaultValue;
+        } else if (setting is _Setting<int>) {
+          setting.value = prefs.getInt(key) ?? setting.defaultValue;
+        } else if (setting is _Setting<String>) {
+          setting.value = prefs.getString(key) ?? setting.defaultValue;
+        }
+      });
+      _tripleFormCopies =
+          (prefs.getStringList('triple_form_copies') ?? ['0', '1', '2'])
+              .map(int.parse)
+              .toList();
+    } catch (e) {
+      debugPrint('SettingsProvider init failed: $e');
+    }
     notifyListeners();
   }
 
@@ -188,3 +192,4 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setTripleFormMode(String v) =>
       _set<String>('triple_form_mode', v);
 }
+

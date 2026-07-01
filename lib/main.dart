@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/providers/product_provider.dart';
 import 'core/providers/customer_provider.dart';
@@ -17,6 +17,15 @@ import 'features/settings/settings_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('FurniBill Fatal: ${details.exception}');
+    debugPrint('Stack: ${details.stack}');
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Platform error: $error\n$stack');
+    return true;
+  };
   runApp(const FurniBillApp());
 }
 

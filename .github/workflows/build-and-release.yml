@@ -1,4 +1,4 @@
-name: Build & Release
+﻿name: Build & Release
 
 on:
   push:
@@ -115,9 +115,13 @@ jobs:
       - name: Package as IPA
         run: |
           mkdir -p build/ios/ipa/Payload
-          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cp -R "build/ios/iphoneos/Runner.app" "build/ios/ipa/Payload/"
+          # LiveContainer: ensure Frameworks dir is included
+          if [ -d "build/ios/iphoneos/Runner.app/Frameworks" ]; then
+            cp -R "build/ios/iphoneos/Runner.app/Frameworks" "build/ios/ipa/Payload/Runner.app/Frameworks"
+          fi
           cd build/ios/ipa
-          zip -r ../../furni_bill.ipa Payload
+          zip -r --symlinks ../../furni_bill.ipa Payload
           cd ../../..
 
       - name: Upload IPA
@@ -243,3 +247,4 @@ jobs:
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
