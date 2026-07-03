@@ -29,7 +29,7 @@ void main() {
 
   Future<List<String>> tableNames(Database db) async {
     final rows = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type=' table ' AND name NOT LIKE ' sqlite_%'",
+      "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
     );
     return rows.map((r) => r["name"] as String).toList();
   }
