@@ -269,7 +269,7 @@ jobs:
           echo "| \`furni_bill.apk\` | Android 璋冭瘯瀹夎鍖?|" >> CHANGELOG_BODY.md
           echo "| \`furni_bill.ipa\` | iOS **鏃犵鍚?* release 鍖咃紙鏀寔 LiveContainer / AltStore / sideloadly 渚ц浇锛?|" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
-          echo "> 鈿狅笍 姝ょ増鏈负 **Pre-release** 鐗堟湰锛屼粎渚涙祴璇曚娇鐢紝涓嶅缓璁湪鐢熶骇鐜浣跨敤銆? >> CHANGELOG_BODY.md
+          echo "> 鈿狅笍 姝ょ増鏈负 **Pre-release** 鐗堟湰锛屼粎渚涙祴璇曚娇鐢紝涓嶅缓璁湪鐢熶骇鐜浣跨敤銆?" >> CHANGELOG_BODY.md
 
       - name: Delete existing release with same tag (if any)
         uses: actions/github-script@v7
