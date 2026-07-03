@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/product.dart';
@@ -16,6 +16,7 @@ import 'widgets/order_create_header.dart';
 import 'widgets/order_create_item_list.dart';
 import 'widgets/order_create_models.dart';
 import 'widgets/order_create_payment_card.dart';
+import '../../core/services/order_calculator.dart';
 
 class OrderCreatePage extends StatefulWidget {
   final Order? draft;
@@ -35,15 +36,15 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
   double _received = 0;
   String? _clerk;
   bool _saving = false;
+  final OrderCalculator _calc = const OrderCalculator();
 
   bool get isDraftEdit => widget.draft != null;
 
-  double get _totalAmount =>
-      _items.fold(0, (sum, i) => sum + (i.price * i.quantity * i.discount));
-  double get _discountAmount => _totalAmount * (1 - _orderDiscount);
-  double get _afterDiscount => _totalAmount * _orderDiscount;
-  double get _receivable => _afterDiscount - _roundOff;
-  double get _owing => _receivable - _received;
+  double get _totalAmount => _calc.totalAmount(_items);
+  double get _discountAmount => _calc.discountAmount(_totalAmount, _orderDiscount);
+  double get _afterDiscount => _calc.afterDiscount(_totalAmount, _orderDiscount);
+  double get _receivable => _calc.receivable(_afterDiscount, _roundOff);
+  double get _owing => _calc.owing(_receivable, _received);
 
   double get _totalQuantity =>
       _items.fold(0.0, (s, i) => s + i.quantity);
