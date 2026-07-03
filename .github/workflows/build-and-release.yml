@@ -120,16 +120,21 @@ jobs:
       - name: Flutter clean
         run: flutter clean
 
-      # Build the iOS app in release mode. `--no-codesign` skips signing in
-      # Flutter's xcode_backend.sh step; we also override Xcode build settings
-      # to be explicit about it (the project still has CODE_SIGN_STYLE=Automatic).
+      # Build the iOS app in release mode. `--no-codesign` is the only flag
+      # we need: Flutter's xcode_backend.sh honours it and skips signing in
+      # the underlying xcodebuild invocation. Note that `--export-options-plist`
+      # is an xcodebuild flag (not a flutter build flag), and this workflow
+      # does NOT run xcodebuild -exportArchive -- we package the unsigned .app
+      # directly with `ditto` two steps below. `ios/ExportOptions.plist` is
+      # therefore kept in the repo as documentation of the intended signing
+      # config (method=development, signingStyle=manual, no provisioning
+      # profile, no bitcode) for any future switch to an archive/export
+      # pipeline; it is NOT read by this job.
       - name: Build iOS (release, unsigned)
         run: |
           flutter build ios \
             --release \
-            --no-codesign \
-            --export-options-plist=ios/ExportOptions.plist
-
+            --no-codesign
       - name: Verify .app exists
         run: |
           APP="build/ios/iphoneos/Runner.app"
