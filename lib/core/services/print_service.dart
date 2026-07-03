@@ -213,9 +213,9 @@ class PrintService {
           _tc(item.name, cell(8), pad),
           _tc(item.specSummary ?? '', cell(8), pad),
           _tc(_unitFromItem(item), cell(8), pad, align: pw.TextAlign.center),
-          _tc('${item.quantity}', cell(8), pad, align: pw.TextAlign.center),
-          _tc('${item.price.toStringAsFixed(2)}', cell(8), pad, align: pw.TextAlign.right),
-          _tc('${item.amount.toStringAsFixed(2)}', cell(8), pad, align: pw.TextAlign.right),
+          _tc('$item.quantity', cell(8), pad, align: pw.TextAlign.center),
+          _tc('$item.price.toStringAsFixed(2)', cell(8), pad, align: pw.TextAlign.right),
+          _tc('$item.amount.toStringAsFixed(2)', cell(8), pad, align: pw.TextAlign.right),
         ],
       ));
     }
@@ -230,7 +230,7 @@ class PrintService {
         _tc('', cell(8), pad),
         _tc('${order.itemCount}', cellBold(8), pad, align: pw.TextAlign.center),
         _tc('', cell(8), pad),
-        _tc('${order.receivable.toStringAsFixed(2)}', cellBold(8), pad, align: pw.TextAlign.right),
+        _tc('$order.receivable.toStringAsFixed(2)', cellBold(8), pad, align: pw.TextAlign.right),
       ],
     ));
 

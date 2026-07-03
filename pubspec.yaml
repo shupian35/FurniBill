@@ -16,6 +16,7 @@ dependencies:
 
   # 数据库
   sqflite: ^2.4.1
+  sqflite_common: ^2.4.0
   path_provider: ^2.1.5
   path: ^1.9.0
 
@@ -27,7 +28,7 @@ dependencies:
   webdav_client: ^1.2.1
 
   # 工具
-  intl: ^0.20.2
+  intl: ^0.20.3
   uuid: ^4.5.1
   image_picker: ^1.1.2
   share_plus: ^10.1.4

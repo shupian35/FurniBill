@@ -8,9 +8,9 @@ import '../database/database_helper.dart';
 ///
 /// 子类需要实现：
 ///   String get tableName         -- 数据库表名
-///   T fromMap(Map<String, dynamic> map)  -- 行到 Model 的映射
+///   T fromMap(`Map<String, dynamic>` map)  -- 行到 Model 的映射
 ///   String? get orderByClause    -- 可选排序子句
-///   Map<String, dynamic> toMap(T item)  -- Model 到 map 的映射
+///   `Map<String, dynamic> toMap(T item)`  -- Model 到 map 的映射
 abstract class BaseCrudProvider<T> extends ChangeNotifier {
   final _db = DatabaseHelper.instance;
   List<T> _items = [];
