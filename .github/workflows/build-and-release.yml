@@ -110,7 +110,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock', 'ios/Runner.xcodeproj/project.pbxproj') }}
+          # Include ios/Podfile in the key so that any Podfile change (e.g. the SwiftProtobuf SWIFT_VERSION override) invalidates the cache and forces pod install to regenerate the .xcconfig with the new build settings.
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile', 'ios/Podfile.lock', 'ios/Runner.xcodeproj/project.pbxproj') }}
           restore-keys: |
             ${{ runner.os }}-pods-
 
