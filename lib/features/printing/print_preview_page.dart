@@ -29,10 +29,6 @@ class PrintPreviewPage extends StatelessWidget {
   Future<Uint8List> _buildPdf(PdfPageFormat format, SettingsProvider settings) async {
     final font = await _loadChineseFont();
 
-    // 样式工厂
-    pw.TextStyle ts(double size, {bool bold = false, PdfColor? color}) =>
-        pw.TextStyle(font: font, fontSize: size, fontWeight: bold ? pw.FontWeight.bold : null, color: color);
-
     final pdf = pw.Document();
     final shopName = settings.shopName.isNotEmpty ? settings.shopName : '聪聪木业';
     final dateStr = DateFormat('yyyy-MM-dd').format(order.completeTime ?? order.createTime);
