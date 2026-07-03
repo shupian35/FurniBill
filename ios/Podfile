@@ -40,22 +40,37 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
   end
-
-  # ----- Workaround for SwiftProtobuf 1.33.x + Swift 5.0 mode -----
-  # barcode_scan2 4.7.2 transitively pulls in SwiftProtobuf ~> 1.33, whose
-  # generated descriptor.pb.swift / type.pb.swift / wrappers.pb.swift use
-  # 'nonisolated let' at file scope. SwiftProtobuf's podspec
-  # pins s.swift_version = '5.0', and Swift 5.0 mode rejects that
-  # placement.
-  # Bump the SwiftProtobuf target to Swift 5.5, the minimum that accepts
-  # the generated code. Raise this further if upstream SwiftProtobuf starts
-  # requiring a newer Swift version. We cannot downgrade SwiftProtobuf
-  # below 1.33 because barcode_scan2 requires it via ~> 1.33.
-  installer.pods_project.targets.each do |target|
-    if target.name == 'SwiftProtobuf'
-      target.build_configurations.each do |config|
-        config.build_settings['SWIFT_VERSION'] = '5.5'
+  
+  # ----- Workaround for SwiftProtobuf 1.33.x + Swift 5 mode -----
+  # barcode_scan2 4.7.2 transitively pulls in SwiftProtobuf ~> 1.33.
+  # The .pb.swift files in that pod (descriptor / type / wrappers / any /
+  # api / ...) annotate every file-scope let/var with the 'nonisolated'
+  # keyword, which the Swift 5 compiler (Xcode 15.x on macos-14) rejects
+  # with:
+  #   'nonisolated' modifier cannot be applied to this declaration
+  # The file-scope form of 'nonisolated' is Swift 6 only (SE-0431), so
+  # simply bumping SWIFT_VERSION to 5.5/5.9/5.10 on the target does not
+  # help. We cannot downgrade SwiftProtobuf below 1.33 either, because
+  # barcode_scan2 pins it via '~> 1.33'.
+  #
+  # The fix: after 'pod install' copies SwiftProtobuf into the project,
+  # strip the 'nonisolated' keyword from every generated .pb.swift file.
+  # In Swift 5 mode, a file-scope let/var is already nonisolated by
+  # default, so dropping the keyword is a no-op semantically. We patch
+  # the files in-place so Xcode compiles them on the first try.
+  swift_protobuf_dir = File.join('Pods', 'SwiftProtobuf', 'Sources', 'SwiftProtobuf')
+  if Dir.exist?(swift_protobuf_dir)
+    patched_count = 0
+    Dir.glob(File.join(swift_protobuf_dir, '*.pb.swift')).each do |file|
+      text = File.read(file)
+      patched = text.gsub(/nonisolated\s+/, '')
+      if patched != text
+        File.write(file, patched)
+        patched_count += 1
       end
+    end
+    if patched_count > 0
+      Pod::UI.puts "  -> patched #{patched_count} SwiftProtobuf .pb.swift file(s) (stripped nonisolated for Swift 5 mode)"
     end
   end
 end
