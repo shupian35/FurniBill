@@ -249,28 +249,27 @@ jobs:
       - name: Generate changelog from commits
         id: changelog
         run: |
-          echo "## 鏇存柊鍐呭" > CHANGELOG_BODY.md
+          echo "## 更新内容" > CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           git log --oneline -10 --pretty=format:"- %s" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "---" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
-          echo "### 鏋勫缓淇℃伅" >> CHANGELOG_BODY.md
-          echo "- **鐗堟湰**: ${{ steps.version.outputs.version }}" >> CHANGELOG_BODY.md
-          echo "- **鎻愪氦**: \`${{ github.sha }}\`" >> CHANGELOG_BODY.md
-          echo "- **鍒嗘敮**: ${{ github.ref_name }}" >> CHANGELOG_BODY.md
-          echo "- **杩愯缂栧彿**: #${{ github.run_number }}" >> CHANGELOG_BODY.md
-          echo "- **鏋勫缓鏃堕棿**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG_BODY.md
+          echo "### 构建信息" >> CHANGELOG_BODY.md
+          echo "- **版本**: ${{ steps.version.outputs.version }}" >> CHANGELOG_BODY.md
+          echo "- **提交**: `${{ github.sha }}" >> CHANGELOG_BODY.md
+          echo "- **分支**: ${{ github.ref_name }}" >> CHANGELOG_BODY.md
+          echo "- **运行编号**: #${{ github.run_number }}" >> CHANGELOG_BODY.md
+          echo "- **构建时间**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
-          echo "### 浜х墿璇存槑" >> CHANGELOG_BODY.md
-          echo "| 鏂囦欢 | 璇存槑 |" >> CHANGELOG_BODY.md
+          echo "### 产物说明" >> CHANGELOG_BODY.md
+          echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
           echo "|---|---|" >> CHANGELOG_BODY.md
-          echo "| \`furni_bill.apk\` | Android 璋冭瘯瀹夎鍖?|" >> CHANGELOG_BODY.md
-          echo "| \`furni_bill.ipa\` | iOS **鏃犵鍚?* release 鍖咃紙鏀寔 LiveContainer / AltStore / sideloadly 渚ц浇锛?|" >> CHANGELOG_BODY.md
+          echo "| `furni_bill.apk` | Android 调试安装包 |" >> CHANGELOG_BODY.md
+          echo "| `furni_bill.ipa` | iOS **无签名** release 模式（支持 LiveContainer / AltStore / sideloadly 侧载） |" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
-          echo "> 鈿狅笍 姝ょ増鏈负 **Pre-release** 鐗堟湰锛屼粎渚涙祴璇曚娇鐢紝涓嶅缓璁湪鐢熶骇鐜浣跨敤銆?" >> CHANGELOG_BODY.md
-
+          echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
       - name: Delete existing release with same tag (if any)
         uses: actions/github-script@v7
         continue-on-error: true
