@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/product.dart';
@@ -7,10 +7,15 @@ import '../../core/providers/order_provider.dart';
 import '../../core/providers/product_provider.dart';
 import '../../core/providers/customer_provider.dart';
 import '../../core/providers/settings_provider.dart';
-import '../../core/constants/app_constants.dart';
 import '../../widgets/common/widgets.dart';
 import '../customers/customer_edit_page.dart';
-import '../../features/printing/print_preview_page.dart';
+import '../printing/print_preview_page.dart';
+import 'widgets/order_create_discount_card.dart';
+import 'widgets/order_create_footer.dart';
+import 'widgets/order_create_header.dart';
+import 'widgets/order_create_item_list.dart';
+import 'widgets/order_create_models.dart';
+import 'widgets/order_create_payment_card.dart';
 
 class OrderCreatePage extends StatefulWidget {
   final Order? draft;
@@ -22,7 +27,7 @@ class OrderCreatePage extends StatefulWidget {
 
 class _OrderCreatePageState extends State<OrderCreatePage> {
   Customer? _selectedCustomer;
-  final List<_OrderItemData> _items = [];
+  final List<OrderItemData> _items = [];
   double _orderDiscount = 1.0;
   double _roundOff = 0;
   String _remark = '';
@@ -32,6 +37,16 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
   bool _saving = false;
 
   bool get isDraftEdit => widget.draft != null;
+
+  double get _totalAmount =>
+      _items.fold(0, (sum, i) => sum + (i.price * i.quantity * i.discount));
+  double get _discountAmount => _totalAmount * (1 - _orderDiscount);
+  double get _afterDiscount => _totalAmount * _orderDiscount;
+  double get _receivable => _afterDiscount - _roundOff;
+  double get _owing => _receivable - _received;
+
+  double get _totalQuantity =>
+      _items.fold(0.0, (s, i) => s + i.quantity);
 
   @override
   void initState() {
@@ -45,7 +60,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       final customerProvider = context.read<CustomerProvider>();
       _selectedCustomer = customerProvider.getById(d.customerId);
       for (final item in d.items) {
-        _items.add(_OrderItemData(
+        _items.add(OrderItemData(
           productId: item.productId,
           skuId: item.skuId,
           name: item.name,
@@ -58,13 +73,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       }
     }
   }
-
-  double get _totalAmount =>
-      _items.fold(0, (sum, i) => sum + (i.price * i.quantity * i.discount));
-  double get _discountAmount => _totalAmount * (1 - _orderDiscount);
-  double get _afterDiscount => _totalAmount * _orderDiscount;
-  double get _receivable => _afterDiscount - _roundOff;
-  double get _owing => _receivable - _received;
 
   Future<void> _selectCustomer() async {
     final provider = context.read<CustomerProvider>();
@@ -88,7 +96,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                     const Spacer(),
                     TextButton(
                       onPressed: () async {
-                        Navigator.pop(ctx); // 先关闭
+                        Navigator.pop(ctx);
                         final c = await Navigator.push<Customer>(
                           context,
                           MaterialPageRoute(builder: (_) => const CustomerEditPage()),
@@ -150,7 +158,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                   TextButton(
                     onPressed: () {
                       Navigator.pop(ctx);
-                      // 等 BottomSheet 关闭动画完成后再弹窗
                       Future.delayed(const Duration(milliseconds: 300), _addCustomItem);
                     },
                     child: const Text('+ 临时商品'),
@@ -191,7 +198,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
     );
     if (result != null) {
       setState(() {
-        _items.add(_OrderItemData(
+        _items.add(OrderItemData(
           productId: result.id,
           name: result.name,
           specSummary: result.spec,
@@ -222,7 +229,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
           FilledButton(onPressed: () {
             if (nameCtrl.text.trim().isEmpty) return;
             setState(() {
-              _items.add(_OrderItemData(
+              _items.add(OrderItemData(
                 name: nameCtrl.text.trim(),
                 specSummary: specCtrl.text.trim(),
                 price: double.tryParse(priceCtrl.text) ?? 0,
@@ -268,6 +275,10 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
         ],
       ),
     );
+  }
+
+  void _removeItem(int index) {
+    setState(() => _items.removeAt(index));
   }
 
   Future<void> _completeOrder() async {
@@ -324,7 +335,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
         await orderProvider.saveOrder(order);
       }
 
-      // 扣库存（含负库存校验）
       final settings = context.read<SettingsProvider>();
       for (final item in items) {
         if (item.productId != null) {
@@ -347,7 +357,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('开单成功')));
-        // 弹出到订单列表并打开打印预览
         Navigator.pop(context, true);
         Navigator.push(context, MaterialPageRoute(
           builder: (_) => PrintPreviewPage(order: order),
@@ -420,224 +429,54 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       appBar: AppBar(
         title: Text(isDraftEdit ? '编辑草稿' : '新建销售单'),
         actions: [
-          IconButton(icon: const Icon(Icons.bookmark_outline), tooltip: '挂单', onPressed: _saveDraft),
+          IconButton(icon: const Icon(Icons.bookmark_outline), tooltip: '存草稿', onPressed: _saveDraft),
         ],
       ),
       body: Column(
         children: [
-          Expanded(child: _buildBody(context)),
-          _buildBottomBar(context),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                OrderCreateHeader(customer: _selectedCustomer, onTap: _selectCustomer),
+                const SizedBox(height: 12),
+                OrderCreateItemList(
+                  items: _items,
+                  onEditItem: _editItem,
+                  onRemoveItem: _removeItem,
+                  onAddProduct: _selectProduct,
+                ),
+                const SizedBox(height: 16),
+                OrderCreateDiscountCard(
+                  orderDiscount: _orderDiscount,
+                  roundOff: _roundOff,
+                  afterDiscount: _afterDiscount,
+                  remark: _remark,
+                  onDiscountChanged: (v) => setState(() => _orderDiscount = v),
+                  onRoundOffChanged: (v) => setState(() => _roundOff = v),
+                  onRemarkChanged: (v) => _remark = v,
+                ),
+                const SizedBox(height: 16),
+                OrderCreatePaymentCard(
+                  paymentMethod: _paymentMethod,
+                  received: _received,
+                  receivable: _receivable,
+                  onPaymentMethodChanged: (v) => setState(() => _paymentMethod = v),
+                  onReceivedChanged: (v) => setState(() => _received = v),
+                ),
+                const SizedBox(height: 80),
+              ],
+            ),
+          ),
+          OrderCreateFooter(
+            itemCount: _items.length,
+            totalQuantity: _totalQuantity,
+            receivable: _receivable,
+            saving: _saving,
+            onSubmit: _completeOrder,
+          ),
         ],
       ),
     );
   }
-
-  Widget _buildBody(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // 客户选择
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.person),
-            title: Text(_selectedCustomer?.name ?? '选择客户'),
-            subtitle: _selectedCustomer != null
-                ? Text('${_selectedCustomer!.phone}')
-                : null,
-            trailing: const Icon(Icons.chevron_right),
-            onTap: _selectCustomer,
-          ),
-        ),
-        const SizedBox(height: 12),
-        // 商品列表
-        const Text('商品明细', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-        const SizedBox(height: 8),
-        ..._items.asMap().entries.map((e) {
-          final i = e.value;
-          final amount = i.price * i.quantity * i.discount;
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              title: Text(i.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (i.specSummary != null && i.specSummary!.isNotEmpty)
-                    Text(i.specSummary!, style: TextStyle(color: Theme.of(context).colorScheme.outline)),
-                  Row(children: [
-                    Text('x${i.quantity}${i.unit != null && i.unit!.isNotEmpty ? i.unit! : ""}'),
-                    const SizedBox(width: 8),
-                    AmountText(amount: i.price, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 13)),
-                    if (i.discount < 1.0) ...[
-                      const SizedBox(width: 8),
-                      Text('${(i.discount * 100).toStringAsFixed(0)}折', style: const TextStyle(color: Colors.orange, fontSize: 13)),
-                    ],
-                    if (i.remark != null && i.remark!.isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(i.remark!, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12), overflow: TextOverflow.ellipsis)),
-                    ],
-                  ]),
-                ],
-              ),
-              trailing: AmountText(amount: amount, style: const TextStyle(fontWeight: FontWeight.w600)),
-              onTap: () => _editItem(e.key),
-              onLongPress: () {
-                setState(() => _items.removeAt(e.key));
-              },
-            ),
-          );
-        }),
-        // 添加商品按钮
-        OutlinedButton.icon(
-          onPressed: _selectProduct,
-          icon: const Icon(Icons.add),
-          label: const Text('添加商品'),
-          style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 48)),
-        ),
-        const SizedBox(height: 16),
-        // 整单调整
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('整单调整', style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              Row(children: [
-                const Text('整单折扣'),
-                const Spacer(),
-                SizedBox(
-                  width: 120,
-                  child: TextField(
-                    controller: TextEditingController(text: '${(_orderDiscount * 100).toStringAsFixed(0)}'),
-                    decoration: const InputDecoration(suffixText: '%', border: OutlineInputBorder(), isDense: true),
-                    keyboardType: TextInputType.number,
-                    onChanged: (v) {
-                      final d = (double.tryParse(v) ?? 100) / 100;
-                      setState(() => _orderDiscount = d.clamp(0.1, 1.0));
-                    },
-                  ),
-                ),
-              ]),
-              const SizedBox(height: 8),
-              Row(children: [
-                const Text('抹零'),
-                const Spacer(),
-                SizedBox(
-                  width: 120,
-                  child: TextField(
-                    controller: TextEditingController(text: _roundOff.toStringAsFixed(2)),
-                    decoration: const InputDecoration(prefixText: '¥', border: OutlineInputBorder(), isDense: true),
-                    keyboardType: TextInputType.number,
-                    onChanged: (v) => setState(() => _roundOff = double.tryParse(v) ?? 0),
-                  ),
-                ),
-              ]),
-              if (_roundOff <= 0) ...[
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () {
-                    // 抹去元以下
-                    final frac = _afterDiscount - _afterDiscount.floorToDouble();
-                    setState(() => _roundOff = frac);
-                  },
-                  child: const Text('抹去元以下'),
-                ),
-              ],
-              const SizedBox(height: 8),
-              TextField(
-                decoration: const InputDecoration(labelText: '整单备注', border: OutlineInputBorder(), hintText: '发货仓库、物流单号等'),
-                onChanged: (v) => _remark = v,
-                controller: TextEditingController(text: _remark),
-              ),
-            ]),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // 收款信息
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('收款信息', style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _paymentMethod,
-                decoration: const InputDecoration(labelText: '收款方式', border: OutlineInputBorder()),
-                items: AppConstants.paymentMethods.map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                onChanged: (v) => setState(() => _paymentMethod = v ?? '现金'),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: TextEditingController(text: _received > 0 ? _received.toString() : _receivable.toStringAsFixed(2)),
-                decoration: const InputDecoration(labelText: '实收金额', border: OutlineInputBorder(), prefixText: '¥'),
-                keyboardType: TextInputType.number,
-                onChanged: (v) => setState(() => _received = double.tryParse(v) ?? 0),
-              ),
-              if (_received > _receivable)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text('找零：¥${(_received - _receivable).toStringAsFixed(2)}',
-                      style: const TextStyle(color: Colors.green)),
-                ),
-            ]),
-          ),
-        ),
-        const SizedBox(height: 80),
-      ],
-    );
-  }
-
-  Widget _buildBottomBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2))],
-      ),
-      child: SafeArea(
-        child: Row(children: [
-          Expanded(
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Text('合计', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 13)),
-                const SizedBox(width: 8),
-                Text('${_items.length} 种 ${_items.fold(0.0, (s, i) => s + i.quantity)} 件'),
-              ]),
-              AmountText(amount: _receivable, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.primary)),
-            ]),
-          ),
-          FilledButton(
-            onPressed: _saving ? null : _completeOrder,
-            style: FilledButton.styleFrom(minimumSize: const Size(120, 52)),
-            child: Text(_saving ? '处理中...' : '完成开单', style: const TextStyle(fontSize: 16)),
-          ),
-        ]),
-      ),
-    );
-  }
-}
-
-class _OrderItemData {
-  int? productId;
-  int? skuId;
-  String name;
-  String? specSummary;
-  String? unit;
-  double quantity;
-  double price;
-  double discount;
-  String? remark;
-
-  _OrderItemData({
-    this.productId,
-    this.skuId,
-    required this.name,
-    this.specSummary,
-    this.unit,
-    this.quantity = 1,
-    required this.price,
-    this.discount = 1.0,
-    this.remark,
-  });
 }
