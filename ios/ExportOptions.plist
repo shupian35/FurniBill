@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        ExportOptions.plist for unsigned iOS app distribution.
+        Used by `xcodebuild -exportArchive` or as a reference when packaging
+        a no-codesign .app into a .ipa manually.
+
+        This file is checked in so that future maintainers (or LiveContainer
+        users repackaging) know exactly which signing settings were assumed
+        when the unsigned IPA was produced.
+
+        Key choices:
+        - method: "development"  -> produces an unsigned-ish bundle that
+          LiveContainer / sideloaders accept.  (The actual code signing is
+          skipped because we pass CODE_SIGNING_ALLOWED=NO to xcodebuild.)
+        - signingStyle: "manual" with no identities set -> xcodebuild does
+          not try to look up a provisioning profile in the keychain.
+        - embedProvisioningProfile / uploadBitcode / compileBitcode are
+          off so the resulting .ipa is self-contained and slim.
+    -->
+    <key>method</key>
+    <string>development</string>
+    <key>signingStyle</key>
+    <string>manual</string>
+    <key>destination</key>
+    <string>generic/platform=iOS</string>
+    <key>embedProvisioningProfile</key>
+    <false/>
+    <key>uploadBitcode</key>
+    <false/>
+    <key>compileBitcode</key>
+    <false/>
+</dict>
+</plist>

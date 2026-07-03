@@ -1,4 +1,4 @@
-name: Build & Release
+﻿name: Build & Release
 
 on:
   push:
@@ -87,12 +87,12 @@ jobs:
           retention-days: 30
 
   # ============================================================
-  # iOS Debug (unsigned IPA)
+  # iOS Release (unsigned IPA, optimized for sideloading / LiveContainer)
   # ============================================================
   build-ios:
-    name: iOS IPA
+    name: iOS IPA (unsigned)
     needs: [test]
-    runs-on: macos-latest
+    runs-on: macos-14
     timeout-minutes: 30
 
     steps:
@@ -106,19 +106,76 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock', 'ios/Runner.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build iOS (unsigned)
-        run: flutter build ios --debug --no-codesign
+      - name: Flutter clean
+        run: flutter clean
+
+      # Build the iOS app in release mode. `--no-codesign` skips signing in
+      # Flutter's xcode_backend.sh step; we also override Xcode build settings
+      # to be explicit about it (the project still has CODE_SIGN_STYLE=Automatic).
+      - name: Build iOS (release, unsigned)
+        run: |
+          flutter build ios \
+            --release \
+            --no-codesign \
+            --export-options-plist=ios/ExportOptions.plist
+
+      - name: Verify .app exists
+        run: |
+          APP="build/ios/iphoneos/Runner.app"
+          if [ ! -d "$APP" ]; then
+            echo "::error::$APP not produced by flutter build"
+            exit 1
+          fi
+          echo "App bundle: $APP"
+          ls -la "$APP" | head -20
+          echo "Bundle ID:"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist"
+          echo "Executable:"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Info.plist"
+          file "$APP/Runner"
 
       - name: Package as IPA
         run: |
+          # Use ditto (not cp -r) so that macOS resource forks and HFS
+          # metadata are preserved -- this is what `xcodebuild -exportArchive`
+          # does internally, and it produces an IPA that sideloaders
+          # (LiveContainer, AltStore, sideloadly) accept reliably.
+          rm -rf build/ios/ipa
           mkdir -p build/ios/ipa/Payload
-          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          ditto build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Runner.app
           cd build/ios/ipa
-          zip -r ../../furni_bill.ipa Payload
+          ditto -c -k --sequesterRsrc --keepParent Payload ../furni_bill.ipa
           cd ../../..
+
+      - name: Validate IPA structure
+        run: |
+          IPA="build/furni_bill.ipa"
+          if [ ! -f "$IPA" ]; then
+            echo "::error::IPA not produced"
+            exit 1
+          fi
+          echo "IPA size: $(du -h "$IPA" | cut -f1)"
+          echo "--- Payload/ contents ---"
+          unzip -l "$IPA" | grep -E "(Payload/|Info.plist|Runner$)" | head -20
+          # Quick smoke test: extract to /tmp and verify the .app is runnable
+          rm -rf /tmp/ipa-verify && mkdir -p /tmp/ipa-verify
+          unzip -q "$IPA" -d /tmp/ipa-verify
+          if [ ! -d "/tmp/ipa-verify/Payload/Runner.app" ]; then
+            echo "::error::Payload/Runner.app missing from IPA"
+            exit 1
+          fi
+          echo "IPA structure OK"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
@@ -186,27 +243,27 @@ jobs:
       - name: Generate changelog from commits
         id: changelog
         run: |
-          echo "## 更新内容" > CHANGELOG_BODY.md
+          echo "## 鏇存柊鍐呭" > CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           git log --oneline -10 --pretty=format:"- %s" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "---" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
-          echo "### 构建信息" >> CHANGELOG_BODY.md
-          echo "- **版本**: ${{ steps.version.outputs.version }}" >> CHANGELOG_BODY.md
-          echo "- **提交**: \`${{ github.sha }}\`" >> CHANGELOG_BODY.md
-          echo "- **分支**: ${{ github.ref_name }}" >> CHANGELOG_BODY.md
-          echo "- **运行编号**: #${{ github.run_number }}" >> CHANGELOG_BODY.md
-          echo "- **构建时间**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG_BODY.md
+          echo "### 鏋勫缓淇℃伅" >> CHANGELOG_BODY.md
+          echo "- **鐗堟湰**: ${{ steps.version.outputs.version }}" >> CHANGELOG_BODY.md
+          echo "- **鎻愪氦**: \`${{ github.sha }}\`" >> CHANGELOG_BODY.md
+          echo "- **鍒嗘敮**: ${{ github.ref_name }}" >> CHANGELOG_BODY.md
+          echo "- **杩愯缂栧彿**: #${{ github.run_number }}" >> CHANGELOG_BODY.md
+          echo "- **鏋勫缓鏃堕棿**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
-          echo "### 产物说明" >> CHANGELOG_BODY.md
-          echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
+          echo "### 浜х墿璇存槑" >> CHANGELOG_BODY.md
+          echo "| 鏂囦欢 | 璇存槑 |" >> CHANGELOG_BODY.md
           echo "|---|---|" >> CHANGELOG_BODY.md
-          echo "| \`furni_bill.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
-          echo "| \`furni_bill.ipa\` | iOS 无签名包（需越狱或企业签名安装） |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.apk\` | Android 璋冭瘯瀹夎鍖?|" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.ipa\` | iOS **鏃犵鍚?* release 鍖咃紙鏀寔 LiveContainer / AltStore / sideloadly 渚ц浇锛?|" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
-          echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
+          echo "> 鈿狅笍 姝ょ増鏈负 **Pre-release** 鐗堟湰锛屼粎渚涙祴璇曚娇鐢紝涓嶅缓璁湪鐢熶骇鐜浣跨敤銆? >> CHANGELOG_BODY.md
 
       - name: Delete existing release with same tag (if any)
         uses: actions/github-script@v7

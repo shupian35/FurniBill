@@ -78,7 +78,7 @@ GitHub Actions 工作流：`.github/workflows/build-and-release.yml`喵~
 
 Tag 格式：`v{版本}-beta.{日期}.{运行号}`（如 `v1.0.0-beta.20260617.1`）喵~
 
-产物：`furni_bill.apk`（Android）、`furni_bill.ipa`（iOS 无签名包）喵~
+产物：`furni_bill.apk`（Android debug 包）、`furni_bill.ipa`（iOS **release** 无签名包，用 `ditto` 打包，支持 LiveContainer / AltStore / sideloadly 侧载）喵~
 
 ## 功能模块
 
@@ -99,7 +99,8 @@ Tag 格式：`v{版本}-beta.{日期}.{运行号}`（如 `v1.0.0-beta.20260617.1
 
 ## 注意事项
 
-- CI 构建的是 **debug** APK/IPA，非 release —— 未配置签名喵~
+- CI 构建 Android **debug** APK；iOS 是 **release** 模式的无签名包（debug 模式 LiveContainer 装上后容易闪退，所以用 release 模式 + 不签名的方式产出）
+- `ios/ExportOptions.plist` 是 iOS 无签名导出的配置（参考用，CI 用 `flutter build ios --release --no-codesign` 走通）喵~
 - `webdav_client` 用于备份同步 —— 移动端需网络权限喵~
 - `barcode_scan2` 需要相机权限，UI 中需处理 `PermissionDeniedException`喵~
 - `flutter_lints` 强制执行分析规则 —— 提交前务必运行 `flutter analyze`喵~
