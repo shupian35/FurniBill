@@ -10,6 +10,7 @@ class CustomerProvider extends ChangeNotifier {
 
   List<Customer> get customers => _customers;
   bool get loading => _loading;
+  String get searchQuery => _searchQuery;
 
   List<Customer> get filteredCustomers {
     if (_searchQuery.isEmpty) return _customers;

@@ -6,7 +6,6 @@ import '../../core/models/product.dart';
 import '../../core/providers/order_provider.dart';
 import '../../core/providers/product_provider.dart';
 import '../../core/providers/customer_provider.dart';
-import '../../widgets/common/widgets.dart';
 import '../customers/customer_edit_page.dart';
 import '../printing/print_preview_page.dart';
 import 'widgets/order_create_discount_card.dart';
@@ -15,6 +14,7 @@ import 'widgets/order_create_header.dart';
 import 'widgets/order_create_item_list.dart';
 import 'widgets/order_create_models.dart';
 import 'widgets/order_create_payment_card.dart';
+import 'widgets/product_picker_sheet.dart';
 import '../../core/services/order_calculator.dart';
 
 class OrderCreatePage extends StatefulWidget {
@@ -138,60 +138,25 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
 
   Future<void> _selectProduct() async {
     final provider = context.read<ProductProvider>();
+    final addedIds = _items.where((i) => i.productId != null).map((i) => i.productId!).toSet();
     final result = await showModalBottomSheet<Product>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (ctx) => SafeArea(
         child: DraggableScrollableSheet(
-          initialChildSize: 0.75,
+          initialChildSize: 0.85,
           minChildSize: 0.5,
           maxChildSize: 0.95,
           expand: false,
-          builder: (_, scrollCtrl) => Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(children: [
-                  const Text('添加商品', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      Future.delayed(const Duration(milliseconds: 300), _addCustomItem);
-                    },
-                    child: const Text('+ 临时商品'),
-                  ),
-                ]),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollCtrl,
-                  itemCount: provider.products.length,
-                  itemBuilder: (_, i) {
-                    final p = provider.products[i];
-                    return ListTile(
-                      leading: Icon(Icons.chair, color: Theme.of(context).colorScheme.primary),
-                      title: Text(p.name),
-                      subtitle: Row(children: [
-                        if (p.spec != null && p.spec!.isNotEmpty) ...[
-                          Text(p.spec!, style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
-                          const SizedBox(width: 8),
-                        ],
-                        AmountText(amount: p.price),
-                        if (p.unit != null && p.unit!.isNotEmpty) ...[
-                          const SizedBox(width: 4),
-                          Text('/${p.unit}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.outline)),
-                        ],
-                      ]),
-                      trailing: const Icon(Icons.add_circle_outline),
-                      onTap: () => Navigator.pop(ctx, p),
-                    );
-                  },
-                ),
-              ),
-            ],
+          builder: (_, scrollCtrl) => ProductPickerSheet(
+            products: provider.products,
+            addedIds: addedIds,
+            scrollCtrl: scrollCtrl,
+            onAddCustom: () {
+              Navigator.pop(ctx);
+              Future.delayed(const Duration(milliseconds: 300), _addCustomItem);
+            },
           ),
         ),
       ),
@@ -279,6 +244,13 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
 
   void _removeItem(int index) {
     setState(() => _items.removeAt(index));
+  }
+
+  void _updateItemQuantity(int index, double newQty) {
+    if (index < 0 || index >= _items.length) return;
+    setState(() {
+      _items[index].quantity = newQty < 1 ? 1 : newQty;
+    });
   }
 
   Future<void> _completeOrder() async {
@@ -422,6 +394,7 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
                   items: _items,
                   onEditItem: _editItem,
                   onRemoveItem: _removeItem,
+                  onQuantityChanged: _updateItemQuantity,
                   onAddProduct: _selectProduct,
                 ),
                 const SizedBox(height: 16),

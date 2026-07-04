@@ -11,11 +11,13 @@ class OrderProvider extends ChangeNotifier {
   bool _loading = false;
   String _statusFilter = '';
   int? _customerFilter;
+  String _searchQuery = '';
 
   List<Order> get orders => _orders;
   List<Order> get drafts => _drafts;
   bool get loading => _loading;
   String get statusFilter => _statusFilter;
+  String get searchQuery => _searchQuery;
 
   List<Order> get filteredOrders {
     var result = _orders.where((o) => !o.isDraft).toList();
@@ -29,6 +31,13 @@ class OrderProvider extends ChangeNotifier {
     }
     if (_customerFilter != null) {
       result = result.where((o) => o.customerId == _customerFilter).toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      result = result.where((o) {
+        return o.orderNo.toLowerCase().contains(q) ||
+            (o.customerName?.toLowerCase().contains(q) ?? false);
+      }).toList();
     }
     return result;
   }
@@ -60,6 +69,11 @@ class OrderProvider extends ChangeNotifier {
 
   void setCustomerFilter(int? customerId) {
     _customerFilter = customerId;
+    notifyListeners();
+  }
+
+  void setSearch(String query) {
+    _searchQuery = query;
     notifyListeners();
   }
 

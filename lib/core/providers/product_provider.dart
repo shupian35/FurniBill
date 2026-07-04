@@ -10,6 +10,7 @@ class ProductProvider extends ChangeNotifier {
 
   List<Product> get products => _products;
   bool get loading => _loading;
+  String get searchQuery => _searchQuery;
 
   List<Product> get filteredProducts {
     if (_searchQuery.isEmpty) return _products;
