@@ -95,26 +95,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     }
   }
 
-  Future<void> _returnItems() async {
+  Future<void> _cancelOrder() async {
     if (_order == null) return;
-    // Simple return: show item selection dialog
-    final selectedItems = <int, double>{};
-    for (var i = 0; i < _order!.items.length; i++) {
-      selectedItems[i] = _order!.items[i].quantity;
-    }
-    // In a real app, this would be a proper return dialog with quantity selection
     final confirmed = await ConfirmDialog.show(
       context,
-      title: '确认退货',
-      message: '是否确认将全部商品退货？',
-      confirmLabel: '确认退货',
+      title: '作废订单',
+      message: '订单作废后状态变为"已作废"，不可撤销。',
+      confirmLabel: '作废',
     );
     if (confirmed == true && mounted) {
-      final orderProvider = context.read<OrderProvider>();
-      await orderProvider.cancelOrder(_order!.id!);
+      await context.read<OrderProvider>().cancelOrder(_order!.id!);
       await _loadOrder();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('退货完成')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('订单已作废')));
       }
     }
   }
@@ -197,9 +190,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             ),
           if (order.status != 'cancelled')
             OutlinedButton.icon(
-              onPressed: _returnItems,
-              icon: const Icon(Icons.undo),
-              label: const Text('退货退款'),
+              onPressed: _cancelOrder,
+              icon: const Icon(Icons.cancel_outlined),
+              label: const Text('作废订单'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
                 foregroundColor: Colors.red,
