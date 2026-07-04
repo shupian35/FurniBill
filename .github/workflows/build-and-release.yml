@@ -258,7 +258,7 @@ jobs:
           echo "" >> CHANGELOG_BODY.md
           echo "### 构建信息" >> CHANGELOG_BODY.md
           echo "- **版本**: ${{ steps.version.outputs.version }}" >> CHANGELOG_BODY.md
-          echo "- **提交**: `${{ github.sha }}" >> CHANGELOG_BODY.md
+          echo "- **提交**: \`${{ github.sha }}\`" >> CHANGELOG_BODY.md
           echo "- **分支**: ${{ github.ref_name }}" >> CHANGELOG_BODY.md
           echo "- **运行编号**: #${{ github.run_number }}" >> CHANGELOG_BODY.md
           echo "- **构建时间**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG_BODY.md
@@ -266,8 +266,8 @@ jobs:
           echo "### 产物说明" >> CHANGELOG_BODY.md
           echo "| 文件 | 说明 |" >> CHANGELOG_BODY.md
           echo "|---|---|" >> CHANGELOG_BODY.md
-          echo "| `furni_bill.apk` | Android 调试安装包 |" >> CHANGELOG_BODY.md
-          echo "| `furni_bill.ipa` | iOS **无签名** release 模式（支持 LiveContainer / AltStore / sideloadly 侧载） |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.apk\` | Android 调试安装包 |" >> CHANGELOG_BODY.md
+          echo "| \`furni_bill.ipa\` | iOS **无签名** release 模式（支持 LiveContainer / AltStore / sideloadly 侧载） |" >> CHANGELOG_BODY.md
           echo "" >> CHANGELOG_BODY.md
           echo "> ⚠️ 此版本为 **Pre-release** 版本，仅供测试使用，不建议在生产环境使用。" >> CHANGELOG_BODY.md
       - name: Delete existing release with same tag (if any)
