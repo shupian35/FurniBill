@@ -187,16 +187,7 @@ class _PurchaseCreatePageState extends State<PurchaseCreatePage> {
         status: 'completed',
         remark: _remarkCtrl.text.trim().isNotEmpty ? _remarkCtrl.text.trim() : null,
         completeTime: DateTime.now(),
-      );
-
-      final stockChanges = <int, int>{};
-      for (final item in items) {
-        if (item.productId != null) {
-          stockChanges[item.productId!] = item.quantity.toInt();
-        }
-      }
-
-      await provider.completeOrder(order, stockChanges);
+      );        await provider.completeOrder(order);
 
       if (mounted) {
         setState(() => _saving = false);

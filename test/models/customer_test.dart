@@ -7,7 +7,8 @@ void main() {
       id: 1,
       name: '张老板',
       phone: '13800138000',
-      address: '佛山市顺德区乐从镇',
+      address: '北京市朝阳区某街道',
+      note: '老客户',
     );
 
     test('toMap / fromMap roundtrip', () {
@@ -17,25 +18,29 @@ void main() {
       expect(restored.id, 1);
       expect(restored.name, '张老板');
       expect(restored.phone, '13800138000');
-      expect(restored.address, '佛山市顺德区乐从镇');
+      expect(restored.address, '北京市朝阳区某街道');
+      expect(restored.note, '老客户');
     });
 
-    test('address can be null', () {
+    test('address and note can be null', () {
       final customer = Customer(
         name: '新客户',
         phone: '13900000000',
       );
       expect(customer.address, isNull);
+      expect(customer.note, isNull);
     });
 
     test('copyWith updates specific fields', () {
       final updated = sampleCustomer.copyWith(
         name: '李老板',
         address: '广州市白云区',
+        note: 'VIP 客户',
       );
 
       expect(updated.name, '李老板');
       expect(updated.address, '广州市白云区');
+      expect(updated.note, 'VIP 客户');
       expect(updated.id, 1);
       expect(updated.phone, '13800138000');
     });

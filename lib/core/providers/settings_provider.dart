@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsProvider extends ChangeNotifier {
   bool _darkMode = false;
-  bool _negativeStock = false;
   int _decimalPlaces = 2;
   bool _voiceAnnounce = false;
   String _paperType = 'A4';
@@ -11,7 +10,7 @@ class SettingsProvider extends ChangeNotifier {
   String _shopPhone = '';
   String _shopAddress = '';
   String _bankAccount = '';
-  String _footerText = '感谢您的惠顾，请妥善保管此单据';
+  String _footerText = '感谢您的惠顾，请妥善保管此单据！';
 
   // WebDAV
   String _webdavUrl = '';
@@ -27,7 +26,6 @@ class SettingsProvider extends ChangeNotifier {
   String _tripleFormMode = 'continuous'; // continuous, separate
 
   bool get darkMode => _darkMode;
-  bool get negativeStock => _negativeStock;
   int get decimalPlaces => _decimalPlaces;
   bool get voiceAnnounce => _voiceAnnounce;
   String get paperType => _paperType;
@@ -49,7 +47,6 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _darkMode = prefs.getBool('dark_mode') ?? false;
-    _negativeStock = prefs.getBool('negative_stock') ?? false;
     _decimalPlaces = prefs.getInt('decimal_places') ?? 2;
     _voiceAnnounce = prefs.getBool('voice_announce') ?? false;
     _paperType = prefs.getString('paper_type') ?? 'A4';
@@ -57,7 +54,7 @@ class SettingsProvider extends ChangeNotifier {
     _shopPhone = prefs.getString('shop_phone') ?? '';
     _shopAddress = prefs.getString('shop_address') ?? '';
     _bankAccount = prefs.getString('bank_account') ?? '';
-    _footerText = prefs.getString('footer_text') ?? '感谢您的惠顾，请妥善保管此单据';
+    _footerText = prefs.getString('footer_text') ?? '感谢您的惠顾，请妥善保管此单据！';
     _webdavUrl = prefs.getString('webdav_url') ?? '';
     _webdavUser = prefs.getString('webdav_user') ?? '';
     _webdavPassword = prefs.getString('webdav_password') ?? '';
@@ -87,7 +84,6 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> setDarkMode(bool v) async { _darkMode = v; await _save('dark_mode', v); notifyListeners(); }
-  Future<void> setNegativeStock(bool v) async { _negativeStock = v; await _save('negative_stock', v); notifyListeners(); }
   Future<void> setDecimalPlaces(int v) async { _decimalPlaces = v; await _save('decimal_places', v); notifyListeners(); }
   Future<void> setVoiceAnnounce(bool v) async { _voiceAnnounce = v; await _save('voice_announce', v); notifyListeners(); }
   Future<void> setPaperType(String v) async { _paperType = v; await _save('paper_type', v); notifyListeners(); }

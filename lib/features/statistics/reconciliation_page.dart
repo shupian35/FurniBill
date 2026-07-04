@@ -57,7 +57,7 @@ class _ReconciliationPageState extends State<ReconciliationPage> {
       final totalReceived = orders.fold(0.0, (sum, o) => sum + o.received);
       final totalOwing = totalReceivable - totalReceived;
 
-      if (orders.isNotEmpty || c.totalOwing > 0) {
+      if (orders.isNotEmpty) {
         accounts.add(_CustomerAccount(
           customer: c,
           orders: orders,

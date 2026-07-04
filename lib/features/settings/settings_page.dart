@@ -4,7 +4,6 @@ import '../../core/providers/settings_provider.dart';
 import 'shop_info_page.dart';
 import 'print_settings_page.dart';
 import '../sync/webdav_page.dart';
-import 'warehouse_list_page.dart';
 import 'print_template_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -18,7 +17,6 @@ class SettingsPage extends StatelessWidget {
         builder: (context, settings, _) {
           return ListView(
             children: [
-              // 店铺信息
               ListTile(
                 leading: const Icon(Icons.store),
                 title: const Text('店铺信息'),
@@ -27,7 +25,6 @@ class SettingsPage extends StatelessWidget {
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ShopInfoPage())),
               ),
               const Divider(),
-              // 打印设置
               ListTile(
                 leading: const Icon(Icons.print),
                 title: const Text('打印设置'),
@@ -36,19 +33,11 @@ class SettingsPage extends StatelessWidget {
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrintSettingsPage())),
               ),
               const Divider(),
-              // 操作偏好
               SwitchListTile(
                 secondary: const Icon(Icons.dark_mode),
                 title: const Text('深色模式'),
                 value: settings.darkMode,
                 onChanged: settings.setDarkMode,
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.inventory_2_outlined),
-                title: const Text('允许负库存'),
-                subtitle: const Text('开启后库存不足仍可开单'),
-                value: settings.negativeStock,
-                onChanged: settings.setNegativeStock,
               ),
               ListTile(
                 leading: const Icon(Icons.format_list_numbered),
@@ -64,15 +53,6 @@ class SettingsPage extends StatelessWidget {
                 onChanged: settings.setVoiceAnnounce,
               ),
               const Divider(),
-              // 仓库管理
-              ListTile(
-                leading: const Icon(Icons.warehouse),
-                title: const Text('仓库管理'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WarehouseListPage())),
-              ),
-              const Divider(),
-              // 打印模板
               ListTile(
                 leading: const Icon(Icons.description),
                 title: const Text('打印模板'),
@@ -80,20 +60,6 @@ class SettingsPage extends StatelessWidget {
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PrintTemplatePage())),
               ),
               const Divider(),
-              // 员工管理
-              ListTile(
-                leading: const Icon(Icons.people),
-                title: const Text('员工管理'),
-                subtitle: const Text('功能开发中'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('员工管理功能即将上线')),
-                  );
-                },
-              ),
-              const Divider(),
-              // WebDAV
               ListTile(
                 leading: const Icon(Icons.cloud_sync),
                 title: const Text('WebDAV 备份同步'),

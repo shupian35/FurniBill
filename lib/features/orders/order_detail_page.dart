@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../core/models/order.dart';
 import '../../core/models/payment.dart';
 import '../../core/providers/order_provider.dart';
-import '../../core/providers/product_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../widgets/common/widgets.dart';
 import '../../features/printing/print_preview_page.dart';
@@ -107,18 +106,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     final confirmed = await ConfirmDialog.show(
       context,
       title: '确认退货',
-      message: '是否确认将全部商品退货？库存将自动退回。',
+      message: '是否确认将全部商品退货？',
       confirmLabel: '确认退货',
     );
     if (confirmed == true && mounted) {
       final orderProvider = context.read<OrderProvider>();
-      final productProvider = context.read<ProductProvider>();
       await orderProvider.cancelOrder(_order!.id!);
-      for (final item in _order!.items) {
-        if (item.productId != null) {
-          await productProvider.updateStock(item.productId!, item.quantity.toInt());
-        }
-      }
       await _loadOrder();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('退货完成')));

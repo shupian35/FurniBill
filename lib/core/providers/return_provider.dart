@@ -52,19 +52,13 @@ class ReturnProvider extends ChangeNotifier {
     await refresh();
   }
 
-  Future<void> completeReturn(ReturnOrder returnOrder, Map<int, int> stockChanges) async {
+  Future<void> completeReturn(ReturnOrder returnOrder) async {
     await _db.update(
       'return_orders',
       {'status': 'completed', 'complete_time': DateTime.now().toIso8601String()},
       where: 'id = ?',
       whereArgs: [returnOrder.id],
     );
-    for (final entry in stockChanges.entries) {
-      await _db.rawUpdate(
-        'UPDATE products SET stock = stock + ? WHERE id = ?',
-        [entry.value, entry.key],
-      );
-    }
     await refresh();
   }
 

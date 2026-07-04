@@ -4,11 +4,8 @@ import 'core/providers/product_provider.dart';
 import 'core/providers/customer_provider.dart';
 import 'core/providers/order_provider.dart';
 import 'core/providers/settings_provider.dart';
-import 'core/providers/category_provider.dart';
-import 'core/providers/warehouse_provider.dart';
 import 'core/providers/purchase_provider.dart';
 import 'core/providers/return_provider.dart';
-import 'core/providers/member_provider.dart';
 import 'features/statistics/dashboard_page.dart';
 import 'features/orders/order_list_page.dart';
 import 'features/products/product_list_page.dart';
@@ -31,16 +28,13 @@ class FurniBillApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CustomerProvider()..init()),
         ChangeNotifierProvider(create: (_) => OrderProvider()..init()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..init()),
-        ChangeNotifierProvider(create: (_) => CategoryProvider()..init()),
-        ChangeNotifierProvider(create: (_) => WarehouseProvider()..init()),
         ChangeNotifierProvider(create: (_) => PurchaseProvider()..init()),
         ChangeNotifierProvider(create: (_) => ReturnProvider()..init()),
-        ChangeNotifierProvider(create: (_) => MemberProvider()..init()),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
           return MaterialApp(
-            title: '简易开单',
+            title: '简单开单',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(

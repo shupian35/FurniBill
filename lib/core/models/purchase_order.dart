@@ -20,14 +20,14 @@ class PurchaseOrderItem {
   }) : amount = amount ?? (quantity * price);
 
   Map<String, dynamic> toJson() => {
-    'product_id': productId,
-    'name': name,
-    'spec': spec,
-    'unit': unit,
-    'quantity': quantity,
-    'price': price,
-    'amount': amount,
-  };
+        'product_id': productId,
+        'name': name,
+        'spec': spec,
+        'unit': unit,
+        'quantity': quantity,
+        'price': price,
+        'amount': amount,
+      };
 
   factory PurchaseOrderItem.fromJson(Map<String, dynamic> json) {
     return PurchaseOrderItem(
@@ -47,7 +47,6 @@ class PurchaseOrder {
   final String orderNo;
   final String? supplierName;
   final String? supplierPhone;
-  final int warehouseId;
   final List<PurchaseOrderItem> items;
   final double totalAmount;
   final double paidAmount;
@@ -62,7 +61,6 @@ class PurchaseOrder {
     required this.orderNo,
     this.supplierName,
     this.supplierPhone,
-    this.warehouseId = 1,
     this.items = const [],
     this.totalAmount = 0,
     this.paidAmount = 0,
@@ -74,24 +72,23 @@ class PurchaseOrder {
   }) : createTime = createTime ?? DateTime.now();
 
   Map<String, dynamic> toMap() => {
-    if (id != null) 'id': id,
-    'order_no': orderNo,
-    'supplier_name': supplierName,
-    'supplier_phone': supplierPhone,
-    'warehouse_id': warehouseId,
-    'items': jsonEncode(items.map((i) => i.toJson()).toList()),
-    'total_amount': totalAmount,
-    'paid_amount': paidAmount,
-    'owing_amount': owingAmount,
-    'status': status,
-    'remark': remark,
-    'create_time': createTime.toIso8601String(),
-    'complete_time': completeTime?.toIso8601String(),
-  };
+        if (id != null) 'id': id,
+        'order_no': orderNo,
+        'supplier_name': supplierName,
+        'supplier_phone': supplierPhone,
+        'items': jsonEncode(items.map((i) => i.toJson()).toList()),
+        'total_amount': totalAmount,
+        'paid_amount': paidAmount,
+        'owing_amount': owingAmount,
+        'status': status,
+        'remark': remark,
+        'create_time': createTime.toIso8601String(),
+        'complete_time': completeTime?.toIso8601String(),
+      };
 
   factory PurchaseOrder.fromMap(Map<String, dynamic> map) {
-    List<PurchaseOrderItem> parsedItems = [];
     final raw = map['items']?.toString() ?? '';
+    List<PurchaseOrderItem> parsedItems = const [];
     if (raw.isNotEmpty && raw != '[]') {
       try {
         final list = jsonDecode(raw) as List;
@@ -103,7 +100,6 @@ class PurchaseOrder {
       orderNo: map['order_no'] as String,
       supplierName: map['supplier_name'] as String?,
       supplierPhone: map['supplier_phone'] as String?,
-      warehouseId: map['warehouse_id'] as int? ?? 1,
       items: parsedItems,
       totalAmount: (map['total_amount'] as num?)?.toDouble() ?? 0,
       paidAmount: (map['paid_amount'] as num?)?.toDouble() ?? 0,

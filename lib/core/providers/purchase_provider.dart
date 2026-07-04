@@ -52,19 +52,13 @@ class PurchaseProvider extends ChangeNotifier {
     await refresh();
   }
 
-  Future<void> completeOrder(PurchaseOrder order, Map<int, int> stockChanges) async {
+  Future<void> completeOrder(PurchaseOrder order) async {
     await _db.update(
       'purchase_orders',
       {'status': 'completed', 'complete_time': DateTime.now().toIso8601String()},
       where: 'id = ?',
       whereArgs: [order.id],
     );
-    for (final entry in stockChanges.entries) {
-      await _db.rawUpdate(
-        'UPDATE products SET stock = stock + ? WHERE id = ?',
-        [entry.value, entry.key],
-      );
-    }
     await refresh();
   }
 

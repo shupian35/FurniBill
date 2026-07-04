@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/order.dart';
-import '../../core/models/product.dart';
 import '../../core/models/customer.dart';
+import '../../core/models/product.dart';
 import '../../core/providers/order_provider.dart';
 import '../../core/providers/product_provider.dart';
 import '../../core/providers/customer_provider.dart';
-import '../../core/providers/settings_provider.dart';
 import '../../widgets/common/widgets.dart';
 import '../customers/customer_edit_page.dart';
 import '../printing/print_preview_page.dart';
@@ -294,8 +293,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
     setState(() => _saving = true);
     try {
       final orderProvider = context.read<OrderProvider>();
-      final productProvider = context.read<ProductProvider>();
-
       final orderNo = isDraftEdit ? widget.draft!.orderNo : orderProvider.generateOrderNo();
       final items = _items.map((i) => OrderItem(
         productId: i.productId,
@@ -335,26 +332,6 @@ class _OrderCreatePageState extends State<OrderCreatePage> {
       } else {
         await orderProvider.saveOrder(order);
       }
-
-      final settings = context.read<SettingsProvider>();
-      for (final item in items) {
-        if (item.productId != null) {
-          if (!settings.negativeStock) {
-            final p = productProvider.products.firstWhere((p) => p.id == item.productId);
-            if (p.stock < item.quantity.toInt()) {
-              if (mounted) {
-                setState(() => _saving = false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('${item.name} 库存不足（剩余 ${p.stock}）')),
-                );
-              }
-              return;
-            }
-          }
-          await productProvider.updateStock(item.productId!, -item.quantity.toInt(), orderNo: orderNo);
-        }
-      }
-
       if (mounted) {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('开单成功')));

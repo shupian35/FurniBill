@@ -183,15 +183,7 @@ class _ReturnCreatePageState extends State<ReturnCreatePage> {
         remark: _remarkCtrl.text.trim().isNotEmpty ? _remarkCtrl.text.trim() : null,
         completeTime: DateTime.now(),
       );
-
-      final stockChanges = <int, int>{};
-      for (final item in items) {
-        if (item.productId != null) {
-          stockChanges[item.productId!] = -item.quantity.toInt();
-        }
-      }
-
-      await provider.completeReturn(returnOrder, stockChanges);
+      await provider.completeReturn(returnOrder);
 
       if (mounted) {
         setState(() => _saving = false);

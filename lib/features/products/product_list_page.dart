@@ -136,7 +136,6 @@ class _ProductCard extends StatelessWidget {
               const SizedBox(width: 4),
               Text('/${product.unit}', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
             ],
-            Text('  库存: ${product.stock}', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12)),
           ]),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
